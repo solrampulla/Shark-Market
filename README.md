@@ -79,3 +79,4 @@ Una vez configurado, puedes iniciar el servidor de desarrollo:
 Usando npm:
 ```bash
 npm run dev
+Agrego contenido completo al README
