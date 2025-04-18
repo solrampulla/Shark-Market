@@ -1,0 +1,155 @@
+/* --- FILE: app/globals.css --- */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos personalizados del HTML original */
+body {
+  font-family: 'Inter', sans-serif;
+  @apply bg-gray-50 text-gray-900; /* Aplicando estilos base del body */
+}
+
+/* Fondo para la sección Hero (Alternativa: usar clase bg-hero-pattern de tailwind.config) */
+.hero-section-bg {
+  background-image: url('https://public.readdy.ai/ai/img_res/42deee2d6ca90cc793eb7c6fce8b1ad5.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+/* Estilos para inputs number (quitar flechas) */
+/* Rule for Webkit browsers (Chrome, Safari, Edge) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none; /* Hides controls in Webkit */
+  margin: 0;
+}
+
+/* Rule for Firefox and other modern browsers */
+input[type="number"] {
+  /* Remove the old Firefox-specific rule */
+  /* -moz-appearance: textfield; */ /* <-- Delete or comment out this line */
+
+  /* Add the standard rule to ensure it works on modern Firefox etc. */
+  appearance: none; /* Standard way to hide extra controls */
+}
+
+
+/* Estilos para Checkbox personalizado */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0; /* slate-200 */
+  border-radius: 4px; /* rounded-sm */
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0; /* Evita que se encoja en flex */
+}
+
+.custom-checkbox:checked {
+  background-color: #3b82f6; /* primary */
+  border-color: #3b82f6; /* primary */
+}
+
+.custom-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Estilos para Range Slider personalizado */
+/* Considera usar @tailwindcss/forms para esto */
+.custom-range {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0; /* slate-200 */
+  border-radius: 5px;
+  outline: none;
+}
+
+.custom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #3b82f6; /* primary */
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.custom-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #3b82f6; /* primary */
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+
+/* Estilos para Switch personalizado */
+/* Considera usar @tailwindcss/forms o un componente headless UI */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e2e8f0; /* slate-200 */
+  transition: .4s;
+  border-radius: 24px; /* rounded-full */
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #3b82f6; /* primary */
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Ocultar Scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

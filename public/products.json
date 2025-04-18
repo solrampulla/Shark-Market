@@ -1,0 +1,44 @@
+[
+    {
+      "imageUrl": "https://public.readdy.ai/ai/img_res/b930df76d6ffd88d13462acc56ae311e.jpg",
+      "title": "Complete Coffee Shop Business Plan",
+      "price": 89,
+      "type": "Business Plan",
+      "typeIcon": "ri-file-list-3-line"
+    },
+    {
+      "imageUrl": "https://public.readdy.ai/ai/img_res/eca63f42d5d1686dad406257c375cdfa.jpg",
+      "title": "Retail Business Financial Model",
+      "price": 45,
+      "type": "Excel Template",
+      "typeIcon": "ri-file-excel-2-line"
+    },
+    {
+      "imageUrl": "https://public.readdy.ai/ai/img_res/876a664eff86127f43038ccd4f63c2bf.jpg",
+      "title": "Digital Marketing Strategy Plan",
+      "price": 65,
+      "type": "Marketing Plan",
+      "typeIcon": "ri-file-list-3-line"
+    },
+    {
+      "imageUrl": "https://public.readdy.ai/ai/img_res/2fa48898fff093136a14b2044ce7638c.jpg",
+      "title": "Restaurant Business Plan Bundle",
+      "price": 95,
+      "type": "Business Plan",
+      "typeIcon": "ri-file-list-3-line"
+    },
+    {
+      "imageUrl": "https://public.readdy.ai/ai/img_res/9544e80bae83d47ce97bbe6f7115c409.jpg",
+      "title": "E-commerce Business Blueprint",
+      "price": 79,
+      "type": "Business Plan",
+      "typeIcon": "ri-file-list-3-line"
+    },
+    {
+      "imageUrl": "https://public.readdy.ai/ai/img_res/3535ea337e9745f52ad52137c3af4db8.jpg",
+      "title": "Real Estate Investment Plan",
+      "price": 110,
+      "type": "Business Plan",
+      "typeIcon": "ri-file-list-3-line"
+    }
+  ]
