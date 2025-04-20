@@ -1,52 +1,72 @@
 // --- FILE: components/FeaturedSection.tsx ---
-// FINAL VERSION v4 (Client-side fetch, filtering, sorting, WITH 'use client')
+// FINAL VERSION v5 (Client-side fetch from SUPABASE, filtering, sorting)
+'use client'; // Marcamos como Componente de Cliente
 
-'use client'; // <<<--- ¡AÑADIDO IMPORTANTE!
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // Hooks para estado y efectos
 import Link from 'next/link';
 import ProductCard from './ProductCard';
-import { generateSlug, type Product } from '@/lib/sample-data'; // Importamos Interface y Función
+import { generateSlug, type Product } from '@/lib/sample-data'; // Importamos Interface y Función slug
+import { supabase } from '@/lib/supabaseClient'; // <--- ¡IMPORTAMOS NUESTRO CLIENTE SUPABASE!
 
+// Definimos las props que recibe (igual que antes)
 interface FeaturedSectionProps {
   selectedType: string | null;
   sortBy: string;
 }
 
 const FeaturedSection: React.FC<FeaturedSectionProps> = ({ selectedType, sortBy }) => {
-
-  const [products, setProducts] = useState<Product[]>([]);
+  // Estado para guardar TODOS los productos leídos de Supabase
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  // Estados para manejar la carga y errores
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // useEffect para cargar los datos de Supabase UNA VEZ cuando el componente se monta
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProducts = async () => {
       setIsLoading(true);
       setError(null);
+
       try {
-        const response = await fetch('/products.json');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        // --- INICIO: Llamada a Supabase ---
+        // Usamos el cliente 'supabase' que configuramos
+        // .from('products') indica la tabla que queremos consultar
+        // .select('*') indica que queremos todas las columnas
+        const { data, error: dbError } = await supabase
+          .from('products')
+          .select('*');
+        // --- FIN: Llamada a Supabase ---
+
+        if (dbError) {
+          // Si Supabase devuelve un error, lo lanzamos para que lo capture el catch
+          throw dbError;
         }
-        const data: Product[] = await response.json();
-        setProducts(data);
+
+        // Si la data existe (puede ser null si la tabla está vacía), la guardamos
+        setAllProducts(data || []);
+
       } catch (e: any) {
-        console.error("Failed to fetch products:", e);
-        setError("Failed to load products.");
-        setProducts([]);
+        console.error("Failed to fetch products from Supabase:", e);
+        // Guardamos un mensaje de error más específico si es posible
+        setError(`Failed to load products: ${e.message || 'Unknown error'}`);
+        setAllProducts([]); // Vaciamos en caso de error
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // Terminamos la carga
       }
     };
-    fetchData();
-  }, []);
 
-  // --- Filtrado ---
+    fetchProducts(); // Ejecutamos la función al montar
+  }, []); // El array vacío [] asegura que se ejecute solo una vez
+
+  // --- Lógica de Filtrado y Ordenamiento (aplicada a los datos en 'allProducts') ---
+
+  // 1. Filtrar basado en selectedType
   const filteredProducts = selectedType
-    ? products.filter(product => product.type === selectedType)
-    : products;
+    ? allProducts.filter(product => product.type === selectedType)
+    : allProducts;
 
-  // --- Ordenamiento ---
+  // 2. Ordenar la lista filtrada basado en sortBy
+  // Creamos una copia para no mutar el estado directamente al ordenar
   let sortedAndFilteredProducts = [...filteredProducts];
   switch (sortBy) {
     case 'price-asc':
@@ -55,21 +75,22 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ selectedType, sortBy 
     case 'price-desc':
       sortedAndFilteredProducts.sort((a, b) => b.price - a.price);
       break;
-    case 'newest':
+    case 'newest': // Usamos título como fallback
       sortedAndFilteredProducts.sort((a, b) => a.title.localeCompare(b.title));
       break;
-    case 'popular':
+    case 'popular': // Sin orden específico por ahora
     default:
-      // No sorting for popular or default
       break;
   }
+  // --- Fin Filtrado y Ordenamiento ---
 
-  // --- Renderizado ---
+
+  // --- Lógica de Renderizado (similar a antes, pero usa los datos de Supabase) ---
   if (isLoading) {
     return (
        <section className="py-12 bg-white">
          <div className="container mx-auto px-4 text-center text-gray-500">
-           Loading products...
+           Loading products from database... {/* Mensaje actualizado */}
          </div>
        </section>
     );
@@ -79,7 +100,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ selectedType, sortBy 
      return (
        <section className="py-12 bg-white">
          <div className="container mx-auto px-4 text-center text-red-500">
-           Error: {error}
+           Error: {error} {/* Muestra el mensaje de error */}
          </div>
        </section>
     );
@@ -95,20 +116,23 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ selectedType, sortBy 
           </Link>
         </div>
 
+        {/* Usamos la lista final 'sortedAndFilteredProducts' */}
         {sortedAndFilteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedAndFilteredProducts.map((product, index) => {
+            {sortedAndFilteredProducts.map((product) => { // No necesitamos 'index' si usamos slug como key
+              // Generamos slug y URL (igual que antes)
               const slug = generateSlug(product.title);
               const detailUrl = `/product/${slug}`;
+
               return (
                 <ProductCard
-                  key={slug || index}
-                  imageUrl={product.imageUrl}
+                  key={slug} // Usamos slug como key
+                  imageUrl={product.imageUrl || '/placeholder.png'} // Añadimos fallback por si imageUrl es null
                   title={product.title}
                   price={product.price}
                   type={product.type}
-                  typeIcon={product.typeIcon}
-                  buyLink="#"
+                  typeIcon={product.typeIcon || 'ri-file-line'} // Fallback para icono
+                  buyLink="#" // Placeholder
                   altText={`${product.title} image`}
                   detailUrl={detailUrl}
                 />
@@ -117,7 +141,8 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ selectedType, sortBy 
           </div>
         ) : (
           <div className="text-center py-10 text-gray-500">
-            No products found matching the selected criteria.
+             {/* Mensaje si no hay productos o el filtro no devuelve resultados */}
+             {allProducts.length === 0 ? 'No products available yet.' : 'No products found matching the selected criteria.'}
           </div>
         )}
       </div>

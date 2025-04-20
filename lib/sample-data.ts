@@ -1,19 +1,18 @@
-// lib/sample-data.ts (VERSIÓN LIMPIA)
+// lib/sample-data.ts (CORRECTED - Added 'description' to interface)
 
-// Mantenemos la interfaz 'Product' para que otros archivos sepan cómo son los datos de un producto.
-// La exportamos para que puedan importarla.
+// 1. Actualizamos la interfaz para incluir 'description' (opcional)
 export interface Product {
   imageUrl: string;
   title: string;
   price: number;
   type: string;
   typeIcon: string;
-  buyLink?: string; // Mantenemos las props opcionales por si acaso
-  slug?: string;    // Mantenemos las props opcionales por si acaso
+  description?: string; // <-- ¡PROPIEDAD AÑADIDA AQUÍ! (El '?' la hace opcional)
+  buyLink?: string;
+  slug?: string;
 }
 
-// Mantenemos y exportamos la función para generar slugs, porque la seguimos usando
-// en FeaturedSection.tsx y potencialmente en page.tsx para encontrar el producto.
+// Mantenemos y exportamos la función para generar slugs
 export function generateSlug(title: string): string {
    return title
     .toLowerCase()
@@ -22,6 +21,4 @@ export function generateSlug(title: string): string {
     .replace(/-+/g, '-');        // Evita guiones múltiples
 }
 
-// --- LA DEFINICIÓN DEL ARRAY 'export const featuredProducts = [...]' SE HA BORRADO ---
-// --- EL BUCLE 'featuredProducts.forEach(...)' TAMBIÉN SE HA BORRADO       ---
-// --- Esos datos ahora viven únicamente en 'public/products.json'          ---
+// Ya NO tenemos la lista de productos aquí, se lee desde Supabase.
