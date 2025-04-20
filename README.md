@@ -1,10 +1,10 @@
-# Modelar - Marketplace de Modelos de Negocio
+# Bizplan - Marketplace de Modelos de Negocio
 
-Bienvenido a Modelar, una plataforma web construida con Next.js y Firebase diseñada para que emprendedores y consultores puedan subir, compartir y vender sus modelos de negocio.
+Bienvenido a Bizplan, una plataforma web construida con Next.js y Firebase diseñada para que emprendedores y consultores puedan subir, compartir y vender sus modelos de negocio.
 
 ## Descripción
 
-Modelar ofrece un espacio donde los usuarios pueden explorar diferentes estrategias y estructuras de negocio, así como monetizar sus propias plantillas y modelos probados. Utilizamos Next.js para un rendimiento óptimo y una experiencia de usuario fluida, y Firebase para la autenticación, base de datos en tiempo real y almacenamiento de archivos.
+Bizplan ofrece un espacio donde los usuarios pueden explorar diferentes estrategias y estructuras de negocio, así como monetizar sus propias plantillas y modelos probados. Utilizamos Next.js para un rendimiento óptimo y una experiencia de usuario fluida, y Firebase para la autenticación, base de datos en tiempo real y almacenamiento de archivos.
 
 ## Características Principales (Ejemplo)
 
@@ -36,10 +36,10 @@ Sigue estos pasos para tener una copia del proyecto corriendo en tu máquina loc
 
 1.  **Clona el repositorio:**
     ```bash
-    git clone <URL_DEL_REPOSITORIO>
-    cd modelar
+    git clone [https://github.com/solrampulla/bizplan.git](https://github.com/solrampulla/bizplan.git) # URL actualizada implícitamente
+    cd bizplan  # <--- CAMBIO IMPORTANTE AQUÍ
     ```
-    *(Reemplaza `<URL_DEL_REPOSITORIO>` con la URL real de tu repositorio Git)*
+    *(La URL del clone ya usa 'bizplan' porque es la del repositorio. El cambio clave es el directorio al que entras)*
 
 2.  **Instala las dependencias:**
     Usando npm:
@@ -79,4 +79,3 @@ Una vez configurado, puedes iniciar el servidor de desarrollo:
 Usando npm:
 ```bash
 npm run dev
-Agrego contenido completo al README
