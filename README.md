@@ -78,4 +78,8 @@ Una vez configurado, puedes iniciar el servidor de desarrollo:
 
 Usando npm:
 ```bash
+<<<<<<< HEAD
 npm run dev
+=======
+npm run dev
+>>>>>>> ee0ea3664f55b2fc57de764b1c427921315ab85b
