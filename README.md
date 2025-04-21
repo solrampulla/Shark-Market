@@ -1,24 +1,24 @@
 # Bizplan - Marketplace de Modelos de Negocio
 
-Bienvenido a Bizplan, una plataforma web construida con Next.js y Firebase diseñada para que emprendedores y consultores puedan subir, compartir y vender sus modelos de negocio.
+Bienvenido a Bizplan, una plataforma web construida con Next.js y **Supabase** diseñada para que emprendedores y consultores puedan subir, compartir y vender sus modelos de negocio.
 
 ## Descripción
 
-Bizplan ofrece un espacio donde los usuarios pueden explorar diferentes estrategias y estructuras de negocio, así como monetizar sus propias plantillas y modelos probados. Utilizamos Next.js para un rendimiento óptimo y una experiencia de usuario fluida, y Firebase para la autenticación, base de datos en tiempo real y almacenamiento de archivos.
+Bizplan ofrece un espacio donde los usuarios pueden explorar diferentes estrategias y estructuras de negocio, así como monetizar sus propias plantillas y modelos probados. Utilizamos Next.js para un rendimiento óptimo y una experiencia de usuario fluida, y **Supabase** para la autenticación, base de datos PostgreSQL en tiempo real y almacenamiento de archivos.
 
 ## Características Principales (Ejemplo)
 
-* **Autenticación de Usuarios:** Registro e inicio de sesión seguros utilizando Firebase Authentication.
+* **Autenticación de Usuarios:** Registro e inicio de sesión seguros utilizando **Supabase Auth**.
 * **Subida de Modelos:** Interfaz para que los usuarios suban sus modelos de negocio (posiblemente en formatos como PDF, DOCX, etc.).
 * **Marketplace:** Visualización de los modelos de negocio disponibles para la venta.
-* **Gestión de Archivos:** Almacenamiento seguro de los archivos subidos usando Firebase Storage.
-* **Base de Datos:** Gestión de información de usuarios, modelos y transacciones con Firestore.
+* **Gestión de Archivos:** Almacenamiento seguro de los archivos subidos usando **Supabase Storage**.
+* **Base de Datos:** Gestión de información de usuarios, modelos y transacciones con **Supabase Database (PostgreSQL)**.
 * **(Opcional) Pasarela de Pago:** Integración para procesar las compras de modelos (ej. Stripe, PayPal).
 
 ## Tecnologías Utilizadas
 
 * **Frontend:** Next.js (React)
-* **Backend & Base de Datos:** Firebase (Authentication, Firestore, Storage)
+* **Backend & Base de Datos:** **Supabase** (Auth, Database, Storage)
 * **Estilos:** (Especifica aquí si usas Tailwind CSS, CSS Modules, Styled Components, etc.)
 * **Gestor de Paquetes:** npm o yarn
 
@@ -29,6 +29,7 @@ Antes de empezar, asegúrate de tener instalado lo siguiente:
 * Node.js (Se recomienda versión LTS)
 * npm o yarn
 * Git
+* Una cuenta de Supabase ([supabase.com](https://supabase.com/))
 
 ## Configuración del Proyecto
 
@@ -36,10 +37,9 @@ Sigue estos pasos para tener una copia del proyecto corriendo en tu máquina loc
 
 1.  **Clona el repositorio:**
     ```bash
-    git clone [https://github.com/solrampulla/bizplan.git](https://github.com/solrampulla/bizplan.git) # URL actualizada implícitamente
-    cd bizplan  # <--- CAMBIO IMPORTANTE AQUÍ
+    git clone [https://github.com/solrampulla/bizplan.git](https://github.com/solrampulla/bizplan.git)
+    cd bizplan
     ```
-    *(La URL del clone ya usa 'bizplan' porque es la del repositorio. El cambio clave es el directorio al que entras)*
 
 2.  **Instala las dependencias:**
     Usando npm:
@@ -50,27 +50,19 @@ Sigue estos pasos para tener una copia del proyecto corriendo en tu máquina loc
     ```bash
     yarn install
     ```
+    *(Asegúrate de haber corrido `npm install @supabase/supabase-js` como te indiqué antes)*
 
 3.  **Configura las variables de entorno:**
-    Firebase requiere claves de configuración para conectarse a tu proyecto.
-    * Crea un archivo llamado `.env.local` en la raíz del proyecto.
-    * Añade las siguientes variables con tus credenciales de Firebase. Puedes encontrarlas en la configuración de tu proyecto en la consola de Firebase (Configuración del proyecto > General > Tus apps > Configuración SDK).
+    **Supabase** requiere una URL y una clave anónima pública para conectarse a tu proyecto.
+    * Crea un archivo llamado `.env.local` en la raíz del proyecto (si no existe).
+    * Añade las siguientes variables con tus credenciales de Supabase. Puedes encontrarlas en la configuración de tu proyecto en el dashboard de Supabase (Settings > API).
 
     ```plaintext
-    # Firebase Configuration
-    NEXT_PUBLIC_FIREBASE_API_KEY=TU_API_KEY
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=TU_AUTH_DOMAIN
-    NEXT_PUBLIC_FIREBASE_PROJECT_ID=TU_PROJECT_ID
-    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=TU_STORAGE_BUCKET
-    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=TU_MESSAGING_SENDER_ID
-    NEXT_PUBLIC_FIREBASE_APP_ID=TU_APP_ID
-    # Opcional: Measurement ID para Google Analytics
-    # NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=TU_MEASUREMENT_ID
-
-    # Otras variables de entorno que necesites (ej. claves de API de pasarelas de pago)
-    # STRIPE_SECRET_KEY=TU_CLAVE_SECRETA_STRIPE
+    # Supabase Configuration
+    NEXT_PUBLIC_SUPABASE_URL=TU_SUPABASE_URL
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=TU_SUPABASE_ANON_KEY
     ```
-    **Importante:** Asegúrate de que este archivo `.env.local` esté incluido en tu `.gitignore` para no exponer tus credenciales.
+    **Importante:** Asegúrate de que este archivo `.env.local` esté incluido en tu `.gitignore` para no exponer tus credenciales (aunque la clave 'anon' es pública, la URL es específica de tu proyecto).
 
 ## Correr el Proyecto en Local
 
@@ -78,8 +70,4 @@ Una vez configurado, puedes iniciar el servidor de desarrollo:
 
 Usando npm:
 ```bash
-<<<<<<< HEAD
 npm run dev
-=======
-npm run dev
->>>>>>> ee0ea3664f55b2fc57de764b1c427921315ab85b
