@@ -1,15 +1,16 @@
-// --- FILE: app/layout.tsx ---
+// app/layout.tsx (Combinado)
+"use client"; // Necesario por los hooks
 
-import type { Metadata } from "next";
-import { Inter, Pacifico } from "next/font/google";
-// Quitamos import Head from 'next/head' - ya no se usa así en App Router
-import "./globals.css";
+import { useState, useEffect } from 'react';
+import type { Session } from '@supabase/supabase-js'; // Tipo Session
+import { supabase } from '@/lib/supabaseClient';      // Cliente Supabase
+import Link from 'next/link';                         // Enlaces Next.js
+import { Inter, Pacifico } from 'next/font/google';   // Fuentes del original
+import './globals.css';                               // Estilos globales del original
+import Header from "@/components/Header";             // Header del original
+import Footer from "@/components/Footer";             // Footer del original
 
-// Importa componentes globales
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-
-// Configuración de fuentes
+// Configuración de fuentes (del original)
 const inter = Inter({
   subsets: ["latin"],
   variable: '--font-inter',
@@ -22,32 +23,57 @@ const pacifico = Pacifico({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: "BizPlan Market - Share and Sell Your Business Know-how",
-  description: "The marketplace for business templates. Turn your business expertise into a valuable asset.",
-};
+// Metadata se elimina porque este es un Client Component
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Lógica de sesión (del actual)
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
-    <html lang="en" className={`${inter.variable} ${pacifico.variable}`}>
+    // Estructura HTML y clases (del original)
+    <html lang="es" className={`${inter.variable} ${pacifico.variable}`}>
       <head>
-        {/* El CDN de Remixicon va aquí en App Router */}
+        {/* Link a Remixicon (del original) */}
         <link
             href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
             rel="stylesheet"
         />
       </head>
-      {/* Aplicamos la fuente Inter por defecto, Pacifico se usa con font-pacifico */}
+      {/* Clases en Body (del original) */}
       <body className={`${inter.className} bg-gray-50 flex flex-col min-h-screen`}>
-        <Header />
-        {/* Ajusta pt-[60px] si la altura real del Header es diferente */}
+        {/* Renderiza Header pasándole props (combinado) */}
+        {/* Header necesitará ser modificado para usar estas props */}
+        <Header session={session} loading={loading} onLogout={handleLogout} />
+
+        {/* Estructura Main (del original) */}
         <main className="flex-grow pt-[60px]">
-          {children} {/* Aquí se renderizará page.tsx */}
+          {children} {/* Renderiza el contenido de la página actual */}
         </main>
+
+        {/* Renderiza Footer (del original) */}
         <Footer />
       </body>
     </html>
