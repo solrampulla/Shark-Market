@@ -2,7 +2,6 @@
 'use client'; 
 
 import React from 'react';
-// ---> CORRECCIÓN: Importamos el tipo 'Product' desde nuestro archivo central '/types'.
 import { type Product } from '@/types'; 
 import ProductCard from '@/components/ProductCard';
 
@@ -58,17 +57,11 @@ export default function FeaturedSection({ products, isLoading }: FeaturedSection
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* ---> CORRECCIÓN: Ahora pasamos el objeto 'product' completo en una sola prop */}
           {products.map((product) => ( 
             <ProductCard
               key={product.id!}
-              id={product.id!}
-              isWishlisted={product.isWishlisted || false}
-              image_url={product.previewImageURL}
-              title={product.title}
-              price={product.price}
-              category={product.category}
-              detailUrl={`/product/${product.id}`} 
-              altText={`Imagen de ${product.title}`}
+              product={product}
             />
           ))}
         </div>

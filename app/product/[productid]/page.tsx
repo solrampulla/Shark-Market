@@ -1,8 +1,9 @@
 // --- ARCHIVO CORREGIDO: app/product/[productid]/page.tsx ---
+'use server';
 
 import type { Metadata, ResolvingMetadata } from 'next';
-import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 // Importaciones de acciones y tipos desde sus ubicaciones correctas
 import { getProductDetailsForDisplayAction } from '@/app/actions/product.actions';
@@ -10,32 +11,32 @@ import { getReviewsForProductAction } from '@/app/actions';
 import { type Product } from '@/types';
 import ProductDetailClient from './ProductDetailClient';
 
+// La interfaz debe coincidir con el nombre de la carpeta dinámica
 interface ProductDetailPageProps {
   params: {
-    productid: string; 
+    productid: string; // Usamos 'productid' en minúsculas
   };
 }
 
-// ---> NUEVO: Función para generar metadatos dinámicos para el SEO
+// Función para generar metadatos dinámicos para el SEO
 export async function generateMetadata(
   { params }: ProductDetailPageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const productId = params.productid;
+  const productId = params.productid; // Usamos 'productid' en minúsculas
   const result = await getProductDetailsForDisplayAction(productId);
  
-  // Si no se encuentra el producto, usamos metadatos por defecto
   if (!result.success || !result.product) {
     return {
-      title: 'Producto no encontrado | Founder Market',
+      title: 'Producto no encontrado | Shark Market',
     }
   }
  
   const product = result.product;
  
   return {
-    title: `${product.title} | Founder Market`,
-    description: product.description?.substring(0, 155) || 'Descubre esta herramienta en Founder Market.',
+    title: `${product.title} | Shark Market`,
+    description: product.description?.substring(0, 155) || 'Descubre esta herramienta en Shark Market.',
     openGraph: {
       title: product.title,
       description: product.description?.substring(0, 155) || '',
@@ -44,10 +45,9 @@ export async function generateMetadata(
   }
 }
 
-// La página principal ahora es un Server Component que carga los datos
-// y los pasa al componente de cliente para la interactividad.
+// El componente de la página, que es un Server Component
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const currentProductId = params.productid; 
+  const currentProductId = params.productid; // Usamos 'productid' en minúsculas
 
   if (!currentProductId) {
     notFound(); 
@@ -66,7 +66,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   return (
     // Suspense muestra un fallback mientras el componente de cliente se prepara
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Cargando producto...</div>}>
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><p>Cargando producto...</p></div>}>
         <ProductDetailClient 
             product={productResult.product} 
             initialReviews={reviewsResult.reviews || []}
