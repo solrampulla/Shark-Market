@@ -1,3 +1,4 @@
+// tsconfig.json (CORREGIDO - Añadido baseUrl)
 {
   "compilerOptions": {
     "target": "ES2017",
@@ -18,10 +19,13 @@
         "name": "next"
       }
     ],
+    // --- Líneas Clave para Alias ---
+    "baseUrl": ".", // <-- ¡ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ PRESENTE!
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"] // Esta define el alias @/*
     }
+    // --- Fin Líneas Clave ---
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.js", ".next/types/app/product/[productid]/page.tsx"],
   "exclude": ["node_modules"]
 }

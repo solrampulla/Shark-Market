@@ -1,67 +1,77 @@
-// --- FILE: components/Footer.tsx ---
+// --- ARCHIVO ACTUALIZADO: components/Footer.tsx ---
+// CAMBIO: Se actualiza el nombre de la marca a "Shark Market".
+'use client';
 
 import Link from 'next/link';
+import React from 'react';
+import { Instagram, Twitter, Linkedin } from 'lucide-react';
 
-const Footer = () => {
-  // Getting the current year dynamically is better done client-side or passed as prop if needed server-side
-  // For simplicity here, we'll just use a placeholder or keep it as is if client component
-  // const currentYear = new Date().getFullYear(); // This would work fine in a client component
-
+export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white py-12">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-10"> {/* Adjusted grid for better responsiveness */}
-          {/* Col 1: Logo y Social */}
-          <div>
-            <Link href="/" className="text-2xl font-pacifico text-white mb-4 inline-block">
-               BizPlan
+    <footer className="bg-slate-800 text-slate-300">
+      <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          
+          {/* Columna 1: Logo y Descripción */}
+          <div className="col-span-2 md:col-span-1">
+            {/* ---> CORRECCIÓN: Se actualiza el nombre de la marca */}
+            <Link href="/" className="text-2xl font-serif font-bold text-white">
+              Shark Market
             </Link>
-            <p className="text-gray-400 mb-4 text-sm">The marketplace for business templates.</p>
-            <div className="flex space-x-3">
-              <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition">
-                <i className="ri-twitter-x-line"></i>
-               </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition">
-                <i className="ri-facebook-fill"></i>
+            <p className="mt-4 text-sm text-slate-400">
+              El marketplace de know-how para emprendedores y startups.
+            </p>
+            <div className="mt-6 flex space-x-4">
+              <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-slate-400 hover:text-white transition-colors">
+                <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition">
-                <i className="ri-instagram-line"></i>
+              <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-slate-400 hover:text-white transition-colors">
+                <Twitter className="h-5 w-5" />
               </a>
-              {/* Añade más redes si es necesario */}
+              <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-slate-400 hover:text-white transition-colors">
+                <Linkedin className="h-5 w-5" />
+              </a>
             </div>
           </div>
 
-          {/* Col 2: Quick Links */}
+          {/* Columna 2: Navegación */}
           <div>
-             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="text-gray-400 hover:text-white transition">Home</Link></li>
-              <li><Link href="/categories" className="text-gray-400 hover:text-white transition">Browse Categories</Link></li>
-              <li><Link href="/how-it-works" className="text-gray-400 hover:text-white transition">How It Works</Link></li>
-              <li><Link href="/about" className="text-gray-400 hover:text-white transition">About Us</Link></li>
+            <h3 className="text-sm font-semibold tracking-wider uppercase text-slate-200">Navegación</h3>
+            <ul className="mt-4 space-y-2">
+              <li><Link href="/" className="text-sm text-slate-400 hover:text-white transition-colors">Inicio</Link></li>
+              <li><Link href="/search" className="text-sm text-slate-400 hover:text-white transition-colors">Explorar</Link></li>
+              <li><Link href="/#how-it-works" className="text-sm text-slate-400 hover:text-white transition-colors">Cómo Funciona</Link></li>
+              <li><Link href="/upload" className="text-sm text-slate-400 hover:text-white transition-colors">Vender</Link></li>
             </ul>
           </div>
 
-          {/* Col 3: Support */}
+          {/* Columna 3: Legal */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Support</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/help" className="text-gray-400 hover:text-white transition">Help Center</Link></li>
-               <li><Link href="/contact" className="text-gray-400 hover:text-white transition">Contact Us</Link></li>
-              <li><Link href="/privacy" className="text-gray-400 hover:text-white transition">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="text-gray-400 hover:text-white transition">Terms of Service</Link></li>
+            <h3 className="text-sm font-semibold tracking-wider uppercase text-slate-200">Legal</h3>
+            <ul className="mt-4 space-y-2">
+              <li><Link href="/legal/terms" className="text-sm text-slate-400 hover:text-white transition-colors">Términos y Condiciones</Link></li>
+              <li><Link href="/legal/privacy" className="text-sm text-slate-400 hover:text-white transition-colors">Política de Privacidad</Link></li>
+              <li><Link href="/legal/refund" className="text-sm text-slate-400 hover:text-white transition-colors">Política de Reembolso</Link></li>
             </ul>
           </div>
+
+          {/* Columna 4: Soporte */}
+           <div>
+            <h3 className="text-sm font-semibold tracking-wider uppercase text-slate-200">Soporte</h3>
+            <ul className="mt-4 space-y-2">
+                <li><Link href="/help-center" className="text-sm text-slate-400 hover:text-white transition-colors">Centro de Ayuda</Link></li>
+                <li><Link href="/contact" className="text-sm text-slate-400 hover:text-white transition-colors">Contacto</Link></li>
+            </ul>
+          </div>
+
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
-          {/* Using a fixed year for now, or make Footer a client component to use new Date() */}
-          <p>&copy; {new Date().getFullYear()} BizPlan. All rights reserved.</p> {/* Updated to use dynamic year */}
+        {/* Barra inferior de Copyright */}
+        <div className="mt-12 border-t border-slate-700 pt-8 text-center">
+          {/* ---> CORRECCIÓN: Se actualiza el nombre en el copyright */}
+          <p className="text-sm text-slate-400">&copy; {new Date().getFullYear()} Shark Market. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

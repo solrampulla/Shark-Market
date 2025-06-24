@@ -1,0 +1,19 @@
+# robots.txt para Founder Market
+
+# Permitir a todos los robots rastrear el sitio.
+User-agent: *
+Disallow:
+
+# Indicar a los robots qué páginas privadas o no útiles no deben rastrear.
+Disallow: /settings/
+Disallow: /my-products/
+Disallow: /my-purchases/
+Disallow: /my-wishlist/
+Disallow: /upload/
+Disallow: /auth/
+Disallow: /login/
+Disallow: /register/
+
+# Indicar la ubicación de nuestro mapa del sitio.
+# IMPORTANTE: Cuando lances tu web, cambia "https://www.tudominio.com" por tu dominio real.
+Sitemap: https://www.tudominio.com/sitemap.xml

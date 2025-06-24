@@ -1,56 +1,54 @@
-// --- FILE: app/page.tsx ---
-// UPDATED VERSION (Added state for sorting)
+// --- ARCHIVO FINAL Y DEFINITIVO: app/page.tsx ---
+// CORRECCIÓN: Se reestructura para ser un Server Component que carga datos
+// y los pasa a un Client Component, eliminando el error de raíz.
+import React, { Suspense } from 'react';
+import type { Metadata } from 'next';
 
-'use client';
-
-import { useState } from 'react';
-
-import FilterBar from "@/components/FilterBar";
+// Imports de Componentes de UI (no cambian)
 import HeroSection from "@/components/HeroSection";
 import FeaturedSection from "@/components/FeaturedSection";
-import CategoriesSection from "@/components/CategoriesSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
-import BusinessModelsSection from "@/components/BusinessModelsSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import CtaSection from "@/components/CtaSection";
 
-export default function HomePage() {
-  // Estado para el filtro por tipo
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+// Importaciones de Acciones y Tipos
+import { getFilteredProductsAction } from '@/app/actions/product.actions';
+import { type Product } from '@/types';
 
-  // --- INICIO: Nuevo Estado para Ordenamiento ---
-  // Guardaremos el criterio de ordenación actual.
-  // Opciones posibles: 'popular', 'newest', 'price-asc', 'price-desc' (podemos definir más)
-  // Empezamos ordenando por 'popular' (aunque aún no implementemos esa lógica exacta)
-  const [sortBy, setSortBy] = useState<string>('popular');
-  // 'sortBy' guarda el criterio actual.
-  // 'setSortBy' es la función para cambiar el criterio.
-  // --- FIN: Nuevo Estado para Ordenamiento ---
+
+// Metadatos para la página principal (ya lo teníamos)
+export const metadata: Metadata = {
+  title: 'Founder Market | Tu Marketplace de Know-How Empresarial',
+  description: 'Compra y vende planes de negocio, modelos financieros y estrategias creadas por expertos.',
+};
+
+
+// La página ahora es un Server Component que carga los datos
+export default async function HomePage() {
+
+  // Cargamos los productos directamente en el servidor
+  const productResult = await getFilteredProductsAction({ sortBy: 'newest' });
+  
+  // Extraemos solo los 4 primeros productos, o un array vacío si falla
+  const featuredProducts = (productResult.success && productResult.data) 
+    ? productResult.data.slice(0, 4) 
+    : [];
 
   return (
     <>
-       {/* Pasamos también el estado de ordenación y su función a FilterBar */}
-       <FilterBar
-         selectedType={selectedType}
-         onTypeChange={setSelectedType}
-         sortBy={sortBy} // <-- Nueva prop pasada
-         onSortChange={setSortBy} // <-- Nueva prop pasada
-       />
-
-       <HeroSection />
-
-       {/* Pasamos también el estado de ordenación a FeaturedSection */}
-       <FeaturedSection
-         selectedType={selectedType}
-         sortBy={sortBy} // <-- Nueva prop pasada
-       />
-
-       {/* Las otras secciones no cambian */}
-       <CategoriesSection />
-       <HowItWorksSection />
-       <BusinessModelsSection />
-       <TestimonialsSection />
-       <CtaSection />
+      <HeroSection />
+      <section className="py-24 bg-slate-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Pasamos los productos ya cargados al componente que los muestra */}
+          <FeaturedSection
+            products={featuredProducts}
+            isLoading={false} // La carga ya se hizo en el servidor
+          />
+        </div>
+      </section>
+      <section className="py-24 bg-white"><HowItWorksSection /></section>
+      <section className="py-24 bg-background"><TestimonialsSection /></section>
+      <section className="py-24 bg-white"><CtaSection /></section>
     </>
   );
 }

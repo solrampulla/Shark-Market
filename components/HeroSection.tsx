@@ -1,29 +1,29 @@
 // --- FILE: components/HeroSection.tsx ---
-// CORRECTED VERSION
-
 import Link from 'next/link';
+import Image from 'next/image';
+import HeroSearchBar from './HeroSearchBar';
 
 const HeroSection = () => {
   return (
-    // Aplicar la clase para el fondo desde globals.css
-    <section className="hero-section-bg relative">
-      {/* Overlay Gradiente */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-white/20"></div>
-      {/* Contenido */}
-      <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
-        <div className="max-w-xl">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Share Your Business Know-how
-          </h1>
-          <p className="text-lg text-gray-700 mb-8">
-            Turn your business expertise into a valuable asset. Sell your templates to entrepreneurs.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            {/* Link Corregido: sin legacyBehavior, sin <a>, className en Link */}
-            <Link href="/templates" className="px-6 py-3 bg-primary text-white font-medium rounded-button whitespace-nowrap hover:bg-primary/90 transition inline-block">
-              {'Explore Templates'}
-            </Link>
-             {/* Puedes añadir más botones si es necesario */}
+    <section className="bg-background">
+      <div className="container mx-auto px-4 py-16 sm:py-24 lg:py-32">
+        <div className="flex flex-col md:flex-row items-center gap-12">
+          <div className="md:w-1/2 text-center md:text-left">
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-text-DEFAULT leading-tight">
+              Herramientas de expertos listas para usar
+            </h1>
+            <div className="w-24 h-1.5 bg-accent my-8 mx-auto md:mx-0"></div>
+            <HeroSearchBar />
+          </div>
+          <div className="md:w-1/2 mt-8 md:mt-0">
+            <Image
+              src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg"
+              alt="Portátil mostrando gráficos de negocio en un escritorio moderno"
+              width={600}
+              height={400}
+              className="rounded-lg shadow-xl object-cover"
+              priority 
+            />
           </div>
         </div>
       </div>

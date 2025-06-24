@@ -1,113 +1,131 @@
-// app/my-products/page.tsx (Revisado - Asegura llave final)
-"use client";
+// --- ARCHIVO FINAL Y CORREGIDO: app/my-products/page.tsx ---
+// CORRECCIÓN: Se añade el 'onClick' que faltaba en el botón de cancelar del toast.
+'use client';
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { fetchSellerProductsAction, deleteProductAction } from '@/app/actions/product.actions';
+import { getUserProfileRoleAction } from '@/app/actions/user.actions';
+import { type Product } from '@/types';
 import Link from 'next/link';
-import ProductCard from '@/components/ProductCard';
-import type { Product } from '@/lib/sample-data';
+import { toast } from 'sonner';
+import ProductCard from '@/components/ProductCard'; 
 
 export default function MyProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-  const fetchUserProducts = async () => {
-    setLoading(true);
-    setError(null);
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError) { setError("Error al obtener la sesión."); setLoading(false); return; }
-    if (!session) { router.push('/login'); return; }
-    const userId = session.user.id;
-    try {
-      const { data: userProducts, error: dbError } = await supabase
-        .from('products')
-        .select('*')
-        .eq('user_id', userId);
-      if (dbError) throw dbError;
-      setProducts(userProducts || []);
-    } catch (e: any) {
-      console.error("Failed to fetch user products:", e);
-      setError(`Failed to load products: ${e.message || 'Unknown error'}`);
-      setProducts([]);
-    } finally {
-      setLoading(false);
+    const loadData = useCallback(async (user: User) => {
+        setIsLoading(true);
+        try {
+            const productsResult = await fetchSellerProductsAction(user.uid);
+            if (!productsResult.success || !productsResult.data) {
+                throw new Error(productsResult.message || "No se pudieron cargar tus productos.");
+            }
+            setProducts(productsResult.data);
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (userAuth) => {
+            if (userAuth) {
+                setCurrentUser(userAuth);
+                const roleResult = await getUserProfileRoleAction(userAuth.uid);
+                if (roleResult.role === 'seller') {
+                    await loadData(userAuth);
+                } else {
+                    toast.error("Solo los vendedores pueden acceder a esta página.");
+                    setIsLoading(false);
+                }
+            } else {
+                setCurrentUser(null);
+                setProducts([]);
+                toast.error("Debes iniciar sesión para ver tus productos.");
+                setIsLoading(false);
+            }
+        });
+        return () => unsubscribe();
+    }, [loadData]);
+
+    const executeDeletion = (productId: string) => {
+        if (!currentUser) return;
+        const promise = deleteProductAction(currentUser.uid, productId)
+            .then(result => {
+                if (result.success) {
+                    loadData(currentUser); 
+                    return result.message;
+                } else {
+                    throw new Error(result.message);
+                }
+            });
+        toast.promise(promise, {
+            loading: 'Borrando producto...',
+            success: (message) => `${message}`,
+            error: (err) => `Error: ${err.message}`,
+        });
     }
-  };
 
-  useEffect(() => {
-    fetchUserProducts();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Ejecutar solo al montar
+    const handleDeleteProduct = (productId: string, productTitle: string) => {
+        if (!currentUser) return toast.error("Debes estar autenticado.");
+        toast.warning(`¿Seguro que quieres borrar "${productTitle}"?`, {
+            action: { label: 'Confirmar Borrado', onClick: () => executeDeletion(productId) },
+            // ---> CORRECCIÓN: Añadimos un onClick vacío para cumplir con el tipo de la librería.
+            cancel: { label: 'Cancelar', onClick: () => {} },
+            duration: 10000,
+        });
+    };
 
-  const handleDelete = async (productId: string) => {
-    if (!window.confirm('¿Estás seguro de que quieres borrar este producto? Esta acción no se puede deshacer.')) {
-      return;
+    if (isLoading) {
+        return <div className="text-center p-8"><p className="animate-pulse text-slate-500">Cargando tus productos...</p></div>;
     }
-    console.log(`Intentando borrar producto ID: ${productId}`);
-    setError(null);
-    try {
-      // Nota: Idealmente buscar file_path, image_url_path antes para borrar de Storage.
-      const { error: deleteError } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
+    
+    const validProducts = products.filter(p => p.id);
 
-      if (deleteError) { throw deleteError; }
-      console.log(`Producto ${productId} borrado de la DB.`);
-      setProducts(currentProducts => currentProducts.filter(p => p.id !== productId));
-      alert('Producto borrado con éxito.');
-    } catch (error: any) {
-      console.error("Error al borrar producto:", error);
-      setError(`Error al borrar: ${error.message || 'Error desconocido'}`);
-    }
-  };
-
-  const handleEdit = (productId: string) => {
-    console.log(`Navegando a editar producto ID: ${productId}`);
-    router.push(`/my-products/edit/${productId}`); // Ruta futura
-  };
-
-  if (loading) {
-    return <div className="container mx-auto p-8 text-center">Cargando tus productos...</div>;
-  }
-
-  if (error) {
-    return <div className="container mx-auto p-8 text-center text-red-500">Error: {error}</div>;
-  }
-
-  return (
-    <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-bold mb-6">Mis Productos Subidos</h1>
-      {products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => {
-            const detailUrl = `/product/${product.id}`;
-            return (
-              <ProductCard
-                key={product.id}
-                productId={product.id}
-                image_url={product.image_url || '/placeholder.png'}
-                title={product.title}
-                price={product.price}
-                type={product.type || 'General'}
-                type_icon={product.type_icon || 'ri-file-line'}
-                altText={`${product.title} image`}
-                detailUrl={detailUrl}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            );
-          })}
+    return (
+        <div className="bg-slate-50 min-h-screen">
+            <div className="container mx-auto px-4 py-8 sm:py-12">
+                <div className="flex flex-col sm:flex-row justify-between items-start mb-10 gap-4">
+                    <div>
+                        <h1 className="font-serif text-4xl font-bold text-slate-800">Mis Productos</h1>
+                        <p className="mt-2 text-lg text-slate-500">Gestiona las plantillas y herramientas que has puesto a la venta.</p>
+                    </div>
+                    <Link href="/upload" className="px-6 py-3 bg-accent text-white font-bold rounded-md hover:bg-accent-hover transition-colors duration-300 whitespace-nowrap self-start sm:self-center">
+                         Subir Nuevo Producto
+                    </Link>
+                </div>
+                
+                {validProducts.length === 0 ? (
+                    <div className="text-center py-16 px-6 border-2 border-dashed border-slate-300 rounded-lg bg-white">
+                        <i className="ri-briefcase-4-line text-6xl text-accent opacity-75 mb-4"></i>
+                        <h2 className="text-2xl font-bold text-slate-800">Aún no tienes productos a la venta</h2>
+                        <p className="text-slate-500 mt-2 mb-6 max-w-md mx-auto">¡Empieza a monetizar tu conocimiento! Sube tu primera plantilla para que miles de emprendedores puedan encontrarla.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {validProducts.map(product => (
+                            <ProductCard
+                                key={product.id!}
+                                id={product.id!}
+                                isWishlisted={false}
+                                image_url={product.previewImageURL}
+                                title={product.title}
+                                price={product.price}
+                                category={product.category}
+                                detailUrl={`/product/${product.id}`}
+                                altText={`Imagen de ${product.title}`}
+                                editUrl={`/my-products/edit/${product.id}`}
+                                onDelete={() => handleDeleteProduct(product.id!, product.title)}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
-      ) : (
-         <div className="text-center py-10 text-gray-500">
-           No has subido ningún producto todavía.
-           <Link href="/upload" className="text-primary hover:underline ml-2">¡Sube el primero!</Link>
-         </div>
-       )}
-    </div>
-  );
-} // <--- ASEGÚRATE DE QUE ESTA LLAVE SEA LO ÚLTIMO EN EL ARCHIVO
+    );
+}

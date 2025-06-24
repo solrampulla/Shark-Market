@@ -1,136 +1,78 @@
-// components/FeaturedSection.tsx
-// Versión con ordenación por 'Newest' implementada
-'use client';
+// --- ARCHIVO FINAL Y CORREGIDO: components/FeaturedSection.tsx ---
+'use client'; 
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import ProductCard from './ProductCard';
-import { type Product } from '@/lib/sample-data'; // Asegúrate que Product incluye created_at
-import { supabase } from '@/lib/supabaseClient';
+import React from 'react';
+// ---> CORRECCIÓN: Importamos el tipo 'Product' desde nuestro archivo central '/types'.
+import { type Product } from '@/types'; 
+import ProductCard from '@/components/ProductCard';
 
 interface FeaturedSectionProps {
-  selectedType: string | null;
-  sortBy: string;
+  products: Product[]; 
+  isLoading?: boolean;
 }
 
-const FeaturedSection: React.FC<FeaturedSectionProps> = ({ selectedType, sortBy }) => {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // Seleccionamos todo, incluyendo created_at
-        const { data, error: dbError } = await supabase
-          .from('products')
-          .select('*');
-
-        if (dbError) throw dbError;
-        setAllProducts(data || []);
-      } catch (e: any) {
-        console.error("Failed to fetch products from Supabase:", e);
-        setError(`Failed to load products: ${e.message || 'Unknown error'}`);
-        setAllProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  // --- Lógica de Filtrado y Ordenamiento (con 'newest' actualizado) ---
-  const filteredProducts = selectedType
-    ? allProducts.filter(product => product.type === selectedType)
-    : allProducts;
-
-  let sortedAndFilteredProducts = [...filteredProducts];
-  switch (sortBy) {
-    case 'price-asc':
-      sortedAndFilteredProducts.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-desc':
-      sortedAndFilteredProducts.sort((a, b) => b.price - a.price);
-      break;
-    // --- INICIO: Lógica para 'newest' ---
-    case 'newest':
-      sortedAndFilteredProducts.sort((a, b) => {
-        // Convertimos las fechas (que vienen como string) a objetos Date para comparar
-        // Asumimos que created_at existe en el tipo Product y en los datos
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
-        // Orden descendente (el más reciente, que tiene mayor timestamp, primero)
-        return dateB - dateA;
-      });
-      break;
-    // --- FIN: Lógica para 'newest' ---
-    case 'popular': // Aún sin lógica específica, se queda con el orden de filtro
-    default:
-      // No aplicamos ordenación extra por defecto o para 'popular' por ahora
-      break;
-  }
-  // --- Fin Filtrado y Ordenamiento ---
-
-
-  // --- Lógica de Renderizado (sin cambios) ---
+export default function FeaturedSection({ products, isLoading }: FeaturedSectionProps) {
   if (isLoading) {
     return (
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4 text-center text-gray-500">
-            Loading products...
+      <section id="featured-products">
+        <div className="container mx-auto text-center">
+          <h2 className="font-serif text-4xl font-bold text-center mb-10 text-slate-800">
+            Featured Templates
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="border border-slate-200 rounded-lg p-4 animate-pulse">
+                <div className="w-full h-40 bg-slate-200 rounded mb-4"></div>
+                <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
     );
   }
 
-  if (error) {
-     return (
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4 text-center text-red-500">
-            Error: {error}
-          </div>
-        </section>
-     );
-   }
+  if (products.length === 0) {
+    return (
+      <section id="featured-products">
+        <div className="container mx-auto text-center">
+          <h2 className="font-serif text-4xl font-bold text-center mb-4 text-slate-800">
+            Featured Templates
+          </h2>
+          <p className="text-center text-slate-500">
+            No hay productos para mostrar en este momento.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="py-12 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="mb-8 flex flex-wrap justify-between items-center gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">Featured Business Plans & Templates</h2>
-          <Link href="/templates" className="text-primary font-medium hover:underline flex-shrink-0">
-            View All
-          </Link>
+    <section id="featured-products">
+      <div className="container mx-auto">
+        <div className="mb-10 text-center">
+          <h2 className="font-serif text-4xl font-bold text-slate-800">
+            Featured Templates
+          </h2>
         </div>
-
-        {sortedAndFilteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedAndFilteredProducts.map((product) => {
-              const detailUrl = `/product/${product.id}`;
-              return (
-                <ProductCard
-                  key={product.id}
-                  image_url={product.image_url || '/placeholder.png'}
-                  title={product.title}
-                  price={product.price}
-                  type={product.type || 'General'}
-                  type_icon={product.type_icon || 'ri-file-line'}
-                  altText={`${product.title} image`}
-                  detailUrl={detailUrl}
-                />
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-10 text-gray-500">
-             {allProducts.length === 0 ? 'No products available yet.' : 'No products found matching the selected criteria.'}
-          </div>
-        )}
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {products.map((product) => ( 
+            <ProductCard
+              key={product.id!}
+              id={product.id!}
+              isWishlisted={product.isWishlisted || false}
+              image_url={product.previewImageURL}
+              title={product.title}
+              price={product.price}
+              category={product.category}
+              detailUrl={`/product/${product.id}`} 
+              altText={`Imagen de ${product.title}`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
-};
-
-export default FeaturedSection;
+}

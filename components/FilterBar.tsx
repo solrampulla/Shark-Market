@@ -1,179 +1,109 @@
-// components/FilterBar.tsx - Versión con Tipos Dinámicos desde Supabase
+// ========================================================================
+// ARCHIVO CORREGIDO: components/FilterBar.tsx
+// CORRECCIÓN: Se añade la propiedad 'defaultOptionLabel' que faltaba
+// en el último FilterSelect para cumplir con los requisitos de TypeScript.
+// ========================================================================
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient'; // Importamos cliente Supabase
+import { useDebounce } from 'use-debounce';
+import { CATEGORIES, INDUSTRIES, PRODUCT_TYPES, SORT_OPTIONS } from '@/lib/constants';
+import FilterSelect from './search/FilterSelect';
+import { Search } from 'lucide-react';
 
-interface FilterBarProps {
-  selectedType: string | null;
-  onTypeChange: (type: string | null) => void;
-  sortBy: string;
-  onSortChange: (sortOption: string) => void;
+interface Filters {
+  q?: string;
+  category?: string;
+  industry?: string;
+  type?: string;
+  sortBy?: string;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({
-  selectedType,
-  onTypeChange,
-  sortBy,
-  onSortChange
-}) => {
-  // Estados para controlar la apertura de los desplegables
-  const [businessTypeOpen, setBusinessTypeOpen] = useState(false);
-  const [sortOpen, setSortOpen] = useState(false);
+interface FilterBarProps {
+  initialFilters: Filters; 
+  onFiltersUpdate: (filters: Filters) => void;
+}
 
-  // --- NUEVOS ESTADOS para tipos cargados de la DB ---
-  const [dbTypes, setDbTypes] = useState<string[]>([]); // Guarda los tipos únicos
-  const [typesLoading, setTypesLoading] = useState(true); // Estado de carga para los tipos
-  const [typesError, setTypesError] = useState<string | null>(null); // Estado de error para los tipos
+const FilterBar: React.FC<FilterBarProps> = ({ initialFilters, onFiltersUpdate }) => {
+  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [debouncedFilters] = useDebounce(filters, 500);
 
-  // --- NUEVO useEffect para cargar los tipos desde Supabase ---
   useEffect(() => {
-    const fetchTypes = async () => {
-      setTypesLoading(true);
-      setTypesError(null);
-      try {
-        // Seleccionamos solo la columna 'type' de todos los productos
-        const { data, error } = await supabase
-          .from('products')
-          .select('type'); // Solo necesitamos la columna type
+    onFiltersUpdate(debouncedFilters);
+  }, [debouncedFilters, onFiltersUpdate]);
 
-        if (error) throw error;
-
-        if (data) {
-          // Procesamos los datos para obtener tipos únicos y no nulos
-          const uniqueTypes = [...new Set(data.map(item => item.type).filter(Boolean))] as string[];
-          uniqueTypes.sort(); // Ordenamos alfabéticamente
-          setDbTypes(uniqueTypes); // Guardamos los tipos únicos en el estado
-          console.log("Tipos cargados desde DB:", uniqueTypes);
-        } else {
-           setDbTypes([]); // Si no hay datos, lista vacía
-        }
-      } catch (e: any) {
-        console.error("Error fetching product types:", e);
-        setTypesError("Could not load product types.");
-        setDbTypes([]);
-      } finally {
-        setTypesLoading(false);
-      }
-    };
-
-    fetchTypes(); // Llamamos a la función al montar el componente
-  }, []); // Array vacío para que se ejecute solo una vez
-
-  // --- Las funciones handler (handleTypeClick, clearTypeFilter, handleSortClick, getSortLabel) se mantienen igual ---
-  const handleTypeClick = (type: string) => {
-    const newSelectedType = selectedType === type ? null : type;
-    onTypeChange(newSelectedType);
-    setBusinessTypeOpen(false);
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  const clearTypeFilter = () => {
-    onTypeChange(null);
-    setBusinessTypeOpen(false);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSortClick = (sortOption: string) => {
-    onSortChange(sortOption);
-    setSortOpen(false);
-  };
-
-  const getSortLabel = (sortKey: string): string => {
-     switch (sortKey) {
-       case 'popular': return 'Popular';
-       case 'newest': return 'Newest';
-       case 'price-asc': return 'Price: Low to High';
-       case 'price-desc': return 'Price: High to Low';
-       default: return 'Popular';
-     }
-   };
-
-  // --- JSX Modificado para usar dbTypes ---
   return (
-    <div className="sticky top-[60px] bg-white shadow-sm z-40">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Filters */}
-          <div className="flex items-center space-x-4">
-
-            {/* Business Types Dropdown (Ahora usa dbTypes) */}
-            <div className="relative">
-              <button
-                onClick={() => setBusinessTypeOpen(!businessTypeOpen)}
-                className="flex items-center px-4 py-2 border border-gray-200 rounded-button whitespace-nowrap hover:bg-gray-50 transition"
-                disabled={typesLoading || !!typesError} // Deshabilitar si carga o hay error
-              >
-                <span>{selectedType ? `Type: ${selectedType}` : 'Business Types'}</span>
-                <i className="ri-arrow-down-s-line ml-2"></i>
-              </button>
-              {businessTypeOpen && (
-                <div className="absolute top-full left-0 mt-1 w-60 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2">
-                  {typesLoading ? (
-                    <p className="p-2 text-sm text-gray-500">Loading types...</p>
-                  ) : typesError ? (
-                    <p className="p-2 text-sm text-red-500">{typesError}</p>
-                  ) : dbTypes.length === 0 ? (
-                    <p className="p-2 text-sm text-gray-500">No types available.</p>
-                  ) : (
-                    <ul className="space-y-1 text-sm">
-                      {/* Mapeamos sobre los tipos cargados de la DB */}
-                      {dbTypes.map((type) => (
-                        <li key={type}>
-                          <button
-                            onClick={() => handleTypeClick(type)}
-                            className={`block w-full text-left px-3 py-1.5 rounded hover:bg-gray-100 ${
-                              selectedType === type ? 'bg-blue-100 font-semibold text-primary' : ''
-                            }`}
-                          >
-                            {type} {/* Muestra el tipo de la DB */}
-                          </button>
-                        </li>
-                      ))}
-                      {/* Botón Clear Filter (igual que antes) */}
-                      {selectedType && (
-                           <li key="clear-filter">
-                             <button
-                               onClick={clearTypeFilter}
-                               className="block w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-gray-100 rounded mt-1"
-                             >
-                               Clear Filter
-                             </button>
-                           </li>
-                         )}
-                    </ul>
-                  )}
-                </div>
-              )}
+    <div className="sticky top-[60px] bg-white z-30 border-b border-slate-200 py-3">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between flex-wrap gap-x-4 gap-y-3">
+          
+          <div className="relative flex-grow sm:flex-grow-0 sm:w-64">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="h-4 w-4 text-slate-400" />
             </div>
-
-            {/* Sort by Dropdown (Sin cambios en su lógica interna) */}
-            <div className="relative">
-               <button
-                 onClick={() => setSortOpen(!sortOpen)}
-                 className="flex items-center px-4 py-2 border border-gray-200 rounded-button whitespace-nowrap hover:bg-gray-50 transition"
-               >
-                 <span>Sort by: {getSortLabel(sortBy)}</span>
-                 <i className="ri-arrow-down-s-line ml-2"></i>
-               </button>
-               {sortOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2">
-                    <ul className="text-sm">
-                      <li key="popular"><button onClick={() => handleSortClick('popular')} className={`block w-full text-left px-3 py-1.5 hover:bg-gray-100 rounded ${sortBy === 'popular' ? 'font-semibold text-primary' : ''}`}>Popular</button></li>
-                      <li key="newest"><button onClick={() => handleSortClick('newest')} className={`block w-full text-left px-3 py-1.5 hover:bg-gray-100 rounded ${sortBy === 'newest' ? 'font-semibold text-primary' : ''}`}>Newest</button></li>
-                      <li key="price-asc"><button onClick={() => handleSortClick('price-asc')} className={`block w-full text-left px-3 py-1.5 hover:bg-gray-100 rounded ${sortBy === 'price-asc' ? 'font-semibold text-primary' : ''}`}>Price: Low to High</button></li>
-                      <li key="price-desc"><button onClick={() => handleSortClick('price-desc')} className={`block w-full text-left px-3 py-1.5 hover:bg-gray-100 rounded ${sortBy === 'price-desc' ? 'font-semibold text-primary' : ''}`}>Price: High to Low</button></li>
-                    </ul>
-                  </div>
-                )}
-             </div>
-
+            <input
+              type="text"
+              name="q"
+              id="q"
+              className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              placeholder="Buscar por título..."
+              value={filters.q || ''}
+              onChange={handleInputChange}
+            />
           </div>
 
-          {/* Tags (sin cambios) */}
-          <div className="flex flex-wrap gap-2">
-            <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full cursor-pointer hover:bg-gray-200 transition">#StartupPlans</span>
-            <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full cursor-pointer hover:bg-gray-200 transition">#ExcelTemplates</span>
+          <div className="flex items-center gap-x-3 flex-wrap gap-y-2">
+            <FilterSelect
+              label="Categoría"
+              name="category"
+              value={filters.category || 'all'}
+              onChange={handleSelectChange}
+              options={CATEGORIES}
+              defaultOptionLabel="Todas las Categorías"
+            />
+            <div className="hidden md:block">
+              <FilterSelect
+                label="Industria"
+                name="industry"
+                value={filters.industry || 'all'}
+                onChange={handleSelectChange}
+                options={INDUSTRIES}
+                defaultOptionLabel="Todas las Industrias"
+              />
+            </div>
+            <div className="hidden md:block">
+              <FilterSelect
+                label="Tipo"
+                name="type"
+                value={filters.type || 'all'}
+                onChange={handleSelectChange}
+                options={PRODUCT_TYPES}
+                defaultOptionLabel="Todos los Tipos"
+              />
+            </div>
           </div>
-
+          
+          <div> 
+            {/* --- LA LÍNEA CORREGIDA ESTÁ AQUÍ --- */}
+            <FilterSelect
+              label="Ordenar por"
+              name="sortBy"
+              value={filters.sortBy || 'newest'}
+              onChange={handleSelectChange}
+              options={SORT_OPTIONS}
+              defaultOptionLabel="" // Añadimos la propiedad requerida, aunque esté vacía.
+            />
+          </div>
         </div>
       </div>
     </div>

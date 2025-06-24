@@ -1,34 +1,39 @@
 // --- FILE: components/BusinessModelCard.tsx ---
+// REFACTORED AND TRANSLATED
 
 import Link from 'next/link';
 
+// ---> CAMBIO: Props de color eliminadas de la interfaz.
 interface BusinessModelCardProps {
   icon: string;
   title: string;
   description: string;
   priceInfo: string;
   link: string;
-  iconBgColor: string;
-  iconTextColor: string;
 }
 
 const BusinessModelCard: React.FC<BusinessModelCardProps> = ({
-  icon, title, description, priceInfo, link, iconBgColor, iconTextColor
+  icon, title, description, priceInfo, link
 }) => {
   return (
-     // Added flex flex-col to ensure footer aligns at bottom
-    <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition flex flex-col h-full">
+    // ---> CAMBIO: Nuevo estilo de tarjeta para consistencia, con mejor hover.
+    <div className="bg-background-card rounded-lg border border-slate-200 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col h-full w-full">
       <div className="flex items-center mb-4">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${iconBgColor} ${iconTextColor} mr-4 flex-shrink-0`}>
-          <i className={`${icon} text-xl`}></i>
+        {/* ---> CAMBIO: Estilo de icono unificado con nuestro color 'accent'. */}
+        <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-accent/10 text-accent mr-4 flex-shrink-0">
+          <i className={`${icon} text-2xl`}></i>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-lg font-bold text-text-DEFAULT">{title}</h3>
       </div>
-      <p className="text-gray-600 mb-4 text-sm flex-grow">{description}</p> {/* Added flex-grow */}
-      <div className="flex justify-between items-center mt-auto pt-2"> {/* mt-auto pushes to bottom */}
-        <span className="text-sm text-gray-500">{priceInfo}</span>
-        <Link href={link} className="text-primary font-medium hover:underline text-sm">
-          View Templates
+      <p className="text-text-light mb-4 text-sm flex-grow">{description}</p>
+      
+      {/* ---> CAMBIO: Pie de tarjeta con 'mt-auto' para alinearse abajo. */}
+      <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-100">
+        <span className="text-sm text-text-light">{priceInfo}</span>
+        {/* ---> CAMBIO: Enlace rediseñado como una llamada a la acción clara. */}
+        <Link href={link} className="text-sm font-semibold text-accent hover:text-accent-hover transition-colors flex items-center gap-x-1">
+          Ver Plantillas
+          <i className="ri-arrow-right-line"></i>
         </Link>
       </div>
     </div>

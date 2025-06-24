@@ -1,31 +1,37 @@
 // --- FILE: components/BusinessModelsSection.tsx ---
+// REFACTORED AND TRANSLATED
 
 import BusinessModelCard from './BusinessModelCard';
 
 const BusinessModelsSection = () => {
+  // ---> CAMBIO: Contenido traducido y propiedades de color eliminadas.
   const models = [
-    { icon: 'ri-repeat-line', title: 'Subscription Model', description: 'Recurring revenue through regular payments for ongoing access to a product or service.', priceInfo: 'Starting at $75', link: '/templates/subscription', iconBgColor: 'bg-blue-100', iconTextColor: 'text-primary' },
-    { icon: 'ri-store-2-line', title: 'Franchise Model', description: 'License your business format to others who operate under your brand and system.', priceInfo: 'Starting at $120', link: '/templates/franchise', iconBgColor: 'bg-green-100', iconTextColor: 'text-green-600' },
-    { icon: 'ri-shopping-basket-2-line', title: 'Marketplace Model', description: 'Connect buyers and sellers, taking a commission on transactions or charging listing fees.', priceInfo: 'Starting at $85', link: '/templates/marketplace', iconBgColor: 'bg-red-100', iconTextColor: 'text-red-600' },
-    { icon: 'ri-user-star-line', title: 'Freemium Model', description: 'Offer basic services for free while charging for premium features or enhanced functionality.', priceInfo: 'Starting at $65', link: '/templates/freemium', iconBgColor: 'bg-yellow-100', iconTextColor: 'text-yellow-600' },
-    { icon: 'ri-hand-coin-line', title: 'Direct Sales Model', description: 'Sell products directly to consumers through a network of independent representatives.', priceInfo: 'Starting at $70', link: '/templates/direct-sales', iconBgColor: 'bg-indigo-100', iconTextColor: 'text-indigo-600' },
-    { icon: 'ri-restaurant-line', title: 'Restaurant Model', description: 'Complete business model for restaurants, cafes, and food service businesses with operational guidelines.', priceInfo: 'Starting at $95', link: '/templates/restaurant', iconBgColor: 'bg-orange-100', iconTextColor: 'text-orange-600' },
+    { icon: 'ri-repeat-line', title: 'Modelo de Suscripción', description: 'Ingresos recurrentes a través de pagos regulares por el acceso a un producto o servicio.', priceInfo: 'Desde $75', link: '/search?type=Subscription+Model' },
+    { icon: 'ri-store-2-line', title: 'Modelo de Franquicia', description: 'Licencia tu formato de negocio a otros para que operen bajo tu marca y sistema.', priceInfo: 'Desde $120', link: '/search?type=Franchise+Model' },
+    { icon: 'ri-shopping-basket-2-line', title: 'Modelo de Marketplace', description: 'Conecta a compradores y vendedores, cobrando una comisión por transacción o por listar productos.', priceInfo: 'Desde $85', link: '/search?type=Marketplace+Model' },
+    { icon: 'ri-user-star-line', title: 'Modelo Freemium', description: 'Ofrece servicios básicos gratis mientras cobras por características premium o funcionalidad mejorada.', priceInfo: 'Desde $65', link: '/search?type=Freemium+Model' },
+    { icon: 'ri-hand-coin-line', title: 'Modelo de Venta Directa', description: 'Vende productos directamente a los consumidores a través de una red de representantes independientes.', priceInfo: 'Desde $70', link: '/search?type=Direct+Sales+Model' },
+    { icon: 'ri-restaurant-line', title: 'Modelo de Restaurante', description: 'Modelo de negocio completo para restaurantes, cafés y servicios de comida con guías operativas.', priceInfo: 'Desde $95', link: '/search?type=Restaurant+Model' },
   ];
 
   return (
-    <section className="py-12 bg-gray-50">
+    // ---> CAMBIO: Usamos nuestro color de fondo temático.
+    <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="mb-10 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Popular Business Models</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Explore our collection of proven business models that have helped entrepreneurs succeed across various industries
+        <div className="mb-12 text-center">
+          {/* ---> CAMBIO: Título con nuevo estilo y traducción. */}
+          <h2 className="font-serif text-4xl font-bold text-text-DEFAULT mb-4">
+            Modelos de Negocio Populares
+          </h2>
+          {/* ---> CAMBIO: Subtítulo con nuevo estilo y traducción. */}
+          <p className="text-lg text-text-light max-w-3xl mx-auto">
+            Explora nuestra colección de modelos de negocio probados que han ayudado a emprendedores a triunfar en diversas industrias.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {models.map((model, index) => (
-             // Ensure each card in the grid stretches if needed (useful for consistent height)
             <div key={index} className="flex">
-               <BusinessModelCard {...model} />
+              <BusinessModelCard {...model} />
             </div>
           ))}
         </div>
