@@ -7,12 +7,10 @@ import React from 'react';
 import { WishlistButton } from './products/WishlistButton';
 // ---> CORRECCIÓN: Importamos el tipo 'Product' desde nuestro archivo central.
 import { type Product } from '@/types'; 
-import RatingStars from './RatingStars'; // Importamos el componente de estrellas
+import RatingStars from './RatingStars'; 
 
-// ---> CORRECCIÓN: Actualizamos la interfaz para que coincida con nuestro tipo 'Product'
 interface ProductCardProps {
   product: Product;
-  // Las siguientes props son para funcionalidad extra, como en la página de "Mis Productos"
   editUrl?: string;
   onDelete?: (productId: string, title: string) => void;
 }
@@ -56,15 +54,14 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
           </Link>
         </h3>
         
-        {/* Mostramos las estrellas si hay reseñas */}
         <div className="mt-2 flex items-center">
-            {product.reviewCount != null && product.reviewCount > 0 ? (
+            {(product.reviewCount ?? 0) > 0 ? (
                 <>
                     <RatingStars rating={product.averageRating || 0} starSize="text-xs" />
                     <span className="text-xs text-slate-400 ml-2">({product.reviewCount})</span>
                 </>
             ) : (
-                <div className="h-4"></div> // Placeholder para mantener la altura
+                <div className="h-4"></div>
             )}
         </div>
         
@@ -96,4 +93,4 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
       )}
     </div>
   );
-};
+}
