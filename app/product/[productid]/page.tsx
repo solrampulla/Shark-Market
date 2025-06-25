@@ -5,17 +5,16 @@ import type { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
-// Importaciones de acciones y tipos
 import { getProductDetailsForDisplayAction } from '@/app/actions/product.actions';
 import { getReviewsForProductAction } from '@/app/actions';
 import { type Product } from '@/types';
 import ProductDetailClient from './ProductDetailClient';
 
-// --- CORRECCIÓN ---
-// La interfaz ahora usa 'productId' para coincidir con el nombre de la carpeta '[productId]'
+// --- CORRECCIÓN FINAL ---
+// El nombre del parámetro ahora es 'productid' (minúsculas) para coincidir con el nombre de la carpeta.
 interface ProductDetailPageProps {
   params: {
-    productId: string; 
+    productid: string; 
   };
 }
 
@@ -24,8 +23,8 @@ export async function generateMetadata(
   { params }: ProductDetailPageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  // --- CORRECCIÓN --- Se usa params.productId
-  const productId = params.productId; 
+  // --- CORRECCIÓN FINAL --- Se usa params.productid
+  const productId = params.productid; 
   const result = await getProductDetailsForDisplayAction(productId);
   
   if (!result.success || !result.product) {
@@ -49,8 +48,8 @@ export async function generateMetadata(
 
 // El componente de la página, que es un Server Component
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  // --- CORRECIÓN --- Se usa params.productId
-  const currentProductId = params.productId; 
+  // --- CORRECCIÓN FINAL --- Se usa params.productid
+  const currentProductId = params.productid; 
 
   if (!currentProductId) {
     notFound(); 
@@ -62,16 +61,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     getReviewsForProductAction(currentProductId)
   ]);
 
-  // Si no se encuentra el producto, se muestra un 404
   if (!productResult.success || !productResult.product) {
     notFound(); 
   }
 
   return (
-    // Suspense muestra un fallback mientras el componente de cliente se prepara
     <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><p>Cargando producto...</p></div>}>
         <ProductDetailClient 
-            product={productResult.product} 
+            product={productResult.product!} 
             initialReviews={reviewsResult.reviews || []}
         />
     </Suspense>
