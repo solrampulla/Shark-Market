@@ -18,7 +18,7 @@ import { type Product } from '@/types';
 
 // Metadatos para la página principal (ya lo teníamos)
 export const metadata: Metadata = {
-  title: 'Founder Market | Tu Marketplace de Know-How Empresarial',
+  title: 'Shark Market | Tu Marketplace de Know-How Empresarial',
   description: 'Compra y vende planes de negocio, modelos financieros y estrategias creadas por expertos.',
 };
 
