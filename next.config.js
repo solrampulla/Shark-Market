@@ -22,13 +22,13 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com', // Para avatares de usuarios de Google
+        hostname: 'lh3.googleusercontent.com',
         port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'storage.googleapis.com', // El que soluciona el error de las imágenes
+        hostname: 'storage.googleapis.com',
         port: '',
         pathname: '/**',
       },
@@ -36,4 +36,7 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+// --- CORRECCIÓN FINAL ---
+// Se cambia 'module.exports' por 'export default' para que sea compatible
+// con la configuración de tu proyecto ("type": "module").
+export default nextConfig;

@@ -1,4 +1,4 @@
-// --- ARCHIVO FINAL, CORREGIDO Y COMPLETO ---
+// --- ARCHIVO COMPLETO CON LA FUNCIÓN DE DEPURACIÓN ---
 'use server';
 
 import * as admin from 'firebase-admin';
@@ -6,10 +6,6 @@ import { adminDb, adminStorage } from "@/lib/firebaseAdmin";
 import { FieldValue, type QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import { Product, ProductFile, FilterCriteria } from '@/types';
-
-// (Aquí va todo tu código existente... desde getFilteredProductsAction hasta deleteProductAction)
-// El código que me pasaste ya está aquí, no he modificado nada de lo tuyo.
-// ...
 
 export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
@@ -184,6 +180,7 @@ export async function updateProductAction(
     revalidatePath(`/product/${productId}`);
     revalidatePath('/my-products');
     revalidatePath('/search');
+    revalidatePath('/');
     return { success: true, message: 'Producto actualizado.' };
   } catch (error: any) {
     console.error('[Action] Error en updateProductAction:', error);
@@ -191,14 +188,39 @@ export async function updateProductAction(
   }
 }
 
+// ========================================================================
+// ---> INICIO: FUNCIÓN REEMPLAZADA POR LA VERSIÓN "CON LUPA"
+// ========================================================================
 export async function getProductDetailsForDisplayAction(productId: string): Promise<{ success: boolean; product?: Product; error?: string; }> {
-    if (!productId) return { success: false, error: "No se proporcionó ID de producto." };
+    console.log(`[DEBUG] Iniciando getProductDetailsForDisplayAction para ID: ${productId}`);
+
+    if (!productId) {
+        console.log("[DEBUG] Fallo inmediato: No se proporcionó ID de producto.");
+        return { success: false, error: "No se proporcionó ID de producto." };
+    }
+
     try {
         const productRef = adminDb.collection('products').doc(productId);
+        console.log(`[DEBUG] Referencia al documento creada: ${productRef.path}`);
+
         const productSnap = await productRef.get();
-        if (!productSnap.exists) return { success: false, error: "Producto no encontrado." };
+        console.log("[DEBUG] Snapshot de Firestore obtenido.");
+
+        if (!productSnap.exists) {
+            console.error(`[DEBUG - ERROR] ¡El documento NO EXISTE! productSnap.exists es falso para el ID: ${productId}`);
+            return { success: false, error: "Producto no encontrado." };
+        }
+
+        console.log(`[DEBUG] ¡El documento SÍ EXISTE! ID: ${productSnap.id}`);
         const productData = productSnap.data()!;
-        if (!productData.approved) return { success: false, error: "Este producto no está disponible." };
+        console.log(`[DEBUG] Datos del producto obtenidos. Aprobado: ${productData.approved}`);
+
+        if (!productData.approved) {
+            console.error(`[DEBUG - ERROR] El producto existe PERO no está aprobado.`);
+            return { success: false, error: "Este producto no está disponible." };
+        }
+        
+        console.log("[DEBUG] El producto está aprobado. Construyendo y devolviendo la respuesta final.");
         
         const plainProduct: Product = {
             id: productSnap.id,
@@ -208,11 +230,16 @@ export async function getProductDetailsForDisplayAction(productId: string): Prom
         } as Product;
         
         return { success: true, product: plainProduct };
+
     } catch (error: any) {
-        console.error(`[Action] Error en getProductDetailsForDisplayAction para ID ${productId}:`, error);
-        return { success: false, error: 'Error del servidor.' };
+        console.error(`[ACCIÓN - ERROR CRÍTICO] Excepción capturada en getProductDetailsForDisplayAction para ID ${productId}:`, error);
+        return { success: false, error: 'Error crítico del servidor.' };
     }
 }
+// ========================================================================
+// ---> FIN: FUNCIÓN REEMPLAZADA
+// ========================================================================
+
 
 export async function fetchSellerProductsAction(userId: string) {
     if (!userId) return { success: false, message: 'ID de vendedor no proporcionado.'};
@@ -242,23 +269,26 @@ export async function deleteProductAction(userId: string, productId: string) {
         const doc = await productRef.get();
         if (!doc.exists) return { success: false, message: "El producto no existe." };
         if (doc.data()?.sellerId !== userId) return { success: false, message: "No tienes permiso."};
+        
         await productRef.delete();
+        
+        revalidatePath('/');
+        revalidatePath('/search');
         revalidatePath('/my-products');
+        revalidatePath(`/product/${productId}`);
+        
         return { success: true, message: "Producto borrado."};
     } catch (error: any) {
-        return { success: false, message: "Error en el servidor."};
+        console.error(`[Action] Error en deleteProductAction:`, error);
+        return { success: false, message: "Error en el servidor al borrar el producto."};
     }
 }
-
-// ========================================================================
-// ---> INICIO: FUNCIÓN AÑADIDA PARA EL SITEMAP
-// ========================================================================
 
 export async function getAllPublicProductsForSitemap(): Promise<{ id: string; updatedAt: admin.firestore.Timestamp | null; }[]> {
   try {
     const productsQuery = await adminDb.collection('products')
       .where('approved', '==', true)
-      .select('updatedAt', 'createdAt') // Seleccionamos solo los campos necesarios para optimizar
+      .select('updatedAt', 'createdAt')
       .get();
 
     if (productsQuery.empty) {
@@ -269,14 +299,12 @@ export async function getAllPublicProductsForSitemap(): Promise<{ id: string; up
       const data = doc.data();
       return {
         id: doc.id,
-        // Usamos updatedAt, o createdAt como fallback, o null si no existen
         updatedAt: data.updatedAt || data.createdAt || null,
       };
     });
 
   } catch (error) {
     console.error("Error fetching products for sitemap:", error);
-    // En caso de error, devolvemos un array vacío para no romper la build del sitemap
     return [];
   }
 }
