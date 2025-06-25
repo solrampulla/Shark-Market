@@ -1,12 +1,13 @@
 // ========================================================================
-// ARCHIVO MODIFICADO: components/settings/ProfileForm.tsx
-// CAMBIOS: Se añade saneamiento y validación en tiempo real para el username.
+// ARCHIVO CORREGIDO
 // ========================================================================
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { type ProfileData } from './SettingsFormWrapper';
+// --- CORRECCIÓN ---
+// Se cambia la ruta de importación para que apunte al archivo central de tipos.
+import { type ProfileData } from '@/types';
 import { toast } from 'sonner';
 
 interface ProfileFormProps {
@@ -47,10 +48,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, onSave, isSaving }) 
     }
   };
 
-  // ---> NUEVO: Saneamiento del input del username en tiempo real para una mejor UX.
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Convierte a minúsculas, elimina espacios y caracteres no permitidos.
     const sanitizedUsername = value.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9_-]/g, '');
     setUsername(sanitizedUsername);
   };
@@ -61,7 +60,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, onSave, isSaving }) 
       toast.error('El Nombre Completo no puede estar vacío.');
       return; 
     }
-    // ---> NUEVO: Validación de formato y longitud del username antes de enviar.
     if (username && (username.length < 3 || username.length > 20)) {
         toast.error('El nombre de usuario debe tener entre 3 y 20 caracteres.');
         return;
@@ -97,13 +95,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, onSave, isSaving }) 
                 type="text" 
                 id="settings-username" 
                 value={username} 
-                onChange={handleUsernameChange} // ---> Usamos el nuevo manejador con saneamiento
+                onChange={handleUsernameChange}
                 disabled={isSaving} 
-                className={`${inputStyle} pl-7`} // ---> Añadimos padding para el '@'
+                className={`${inputStyle} pl-7`}
                 placeholder="tu-usuario-unico"
             />
         </div>
-        {/* ---> NUEVO: Ayuda visual para el usuario */}
         <p className="mt-1 text-xs text-slate-500">Solo minúsculas, números, guiones (-) y guiones bajos (_). De 3 a 20 caracteres.</p>
       </div>
 

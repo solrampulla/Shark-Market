@@ -1,5 +1,4 @@
-// --- NUEVO ARCHIVO: components/products/ProductList.tsx ---
-// Este componente se encarga de renderizar una cuadrícula de ProductCards.
+// --- ARCHIVO FINAL Y CORREGIDO: components/products/ProductList.tsx ---
 'use client';
 
 import { type Product } from '@/types';
@@ -13,19 +12,14 @@ export default function ProductList({ products }: ProductListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {products.map((product) => (
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Se reemplaza la larga lista de propiedades incorrectas
+        // por la única propiedad que el componente necesita: 'product'.
         <ProductCard
           key={product.id!}
-          id={product.id!}
-          // La página principal o de búsqueda no tiene contexto de la wishlist del usuario,
-          // por lo que pasamos 'false' por defecto. Se podría mejorar más adelante.
-          isWishlisted={product.isWishlisted || false}
-          image_url={product.previewImageURL}
-          title={product.title}
-          price={product.price}
-          category={product.category}
-          detailUrl={`/product/${product.id}`}
-          altText={`Imagen de ${product.title}`}
+          product={product}
         />
+        // --- FIN DE LA CORRECCIÓN ---
       ))}
     </div>
   );

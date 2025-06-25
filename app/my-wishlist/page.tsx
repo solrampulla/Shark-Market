@@ -1,5 +1,4 @@
-// --- ARCHIVO FINAL Y CORREGIDO: app/my-wishlist/page.tsx ---
-// CORRECCIÓN: Se actualiza la ruta de importación para el tipo 'Product'.
+// --- ARCHIVO FINAL Y CORREGIDO ---
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -9,9 +8,7 @@ import { toast } from 'sonner';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 
-// Esta importación ya estaba bien, la mantenemos.
 import { fetchWishlistProductsAction } from '@/app/wishlist/actions';
-// ---> CORRECCIÓN: Apuntamos a nuestro archivo central de tipos.
 import { type Product } from '@/types';
 
 import ProductCard from '@/components/ProductCard';
@@ -93,17 +90,13 @@ export default function MyWishlistPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {wishlistedProducts.map((product) => (
+                                // --- INICIO DE LA CORRECCIÓN ---
+                                // Se pasa el objeto 'product' completo, que es lo que el componente espera.
                                 <ProductCard
                                     key={product.id!}
-                                    id={product.id!}
-                                    isWishlisted={true}
-                                    image_url={product.previewImageURL}
-                                    title={product.title}
-                                    price={product.price}
-                                    category={product.category}
-                                    detailUrl={`/product/${product.id}`} 
-                                    altText={`Imagen de ${product.title}`}
+                                    product={product}
                                 />
+                                // --- FIN DE LA CORRECCIÓN ---
                             ))}
                         </div>
                     )}

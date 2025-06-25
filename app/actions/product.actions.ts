@@ -1,4 +1,4 @@
-// --- ARCHIVO CORREGIDO Y COMPLETO: app/actions/product.actions.ts ---
+// --- ARCHIVO FINAL, CORREGIDO Y COMPLETO ---
 'use server';
 
 import * as admin from 'firebase-admin';
@@ -7,9 +7,9 @@ import { FieldValue, type QueryDocumentSnapshot } from 'firebase-admin/firestore
 import { revalidatePath } from 'next/cache';
 import { Product, ProductFile, FilterCriteria } from '@/types';
 
-// ========================================================================
-// ---> INICIO: FUNCIÓN RESTAURADA Y CORREGIDA
-// ========================================================================
+// (Aquí va todo tu código existente... desde getFilteredProductsAction hasta deleteProductAction)
+// El código que me pasaste ya está aquí, no he modificado nada de lo tuyo.
+// ...
 
 export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
@@ -46,11 +46,6 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
     return { success: false, error: 'No se pudieron obtener los productos.' };
   }
 }
-
-// ========================================================================
-// ---> FIN: FUNCIÓN RESTAURADA Y CORREGIDA
-// ========================================================================
-
 
 export async function createProductAction(formData: FormData) {
   const userId = formData.get('userId') as string;
@@ -253,4 +248,35 @@ export async function deleteProductAction(userId: string, productId: string) {
     } catch (error: any) {
         return { success: false, message: "Error en el servidor."};
     }
+}
+
+// ========================================================================
+// ---> INICIO: FUNCIÓN AÑADIDA PARA EL SITEMAP
+// ========================================================================
+
+export async function getAllPublicProductsForSitemap(): Promise<{ id: string; updatedAt: admin.firestore.Timestamp | null; }[]> {
+  try {
+    const productsQuery = await adminDb.collection('products')
+      .where('approved', '==', true)
+      .select('updatedAt', 'createdAt') // Seleccionamos solo los campos necesarios para optimizar
+      .get();
+
+    if (productsQuery.empty) {
+      return [];
+    }
+
+    return productsQuery.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        // Usamos updatedAt, o createdAt como fallback, o null si no existen
+        updatedAt: data.updatedAt || data.createdAt || null,
+      };
+    });
+
+  } catch (error) {
+    console.error("Error fetching products for sitemap:", error);
+    // En caso de error, devolvemos un array vacío para no romper la build del sitemap
+    return [];
+  }
 }

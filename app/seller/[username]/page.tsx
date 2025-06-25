@@ -1,10 +1,7 @@
-// --- ARCHIVO FINAL Y CORREGIDO: app/seller/[username]/page.tsx ---
-// CAMBIO: Se añade la función generateMetadata para el SEO dinámico.
-
+// --- ARCHIVO FINAL Y CORREGIDO ---
 import { notFound } from 'next/navigation';
 import { type Metadata, type ResolvingMetadata } from 'next';
 
-// Importaciones de acciones y tipos desde sus ubicaciones correctas
 import { getSellerPublicProfileAction } from '@/app/actions/user.actions';
 import { type Product, type ProfileData } from '@/types';
 
@@ -17,24 +14,23 @@ interface SellerPageProps {
   };
 }
 
-// ---> NUEVO: Función para generar metadatos dinámicos para el SEO del vendedor
 export async function generateMetadata(
   { params }: SellerPageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const username = params.username;
   const result = await getSellerPublicProfileAction(username);
- 
+  
   if (!result.success || !result.profile) {
     return {
-      title: 'Perfil no encontrado | Founder Market',
+      title: 'Perfil no encontrado | Shark Market', // Cambiado a Shark Market
     }
   }
- 
+  
   const profile = result.profile;
-  const pageTitle = `${profile.full_name || 'Vendedor'} | Founder Market`;
-  const pageDescription = profile.professional_title || `Explora todos los productos de ${profile.full_name} en Founder Market.`;
- 
+  const pageTitle = `${profile.full_name || 'Vendedor'} | Shark Market`;
+  const pageDescription = profile.professional_title || `Explora todos los productos de ${profile.full_name} en Shark Market.`;
+  
   return {
     title: pageTitle,
     description: pageDescription,
@@ -46,17 +42,14 @@ export async function generateMetadata(
   }
 }
 
-// El componente de la página sigue siendo un Server Component que carga datos
 export default async function SellerPage({ params }: SellerPageProps) {
   const { username } = params;
-
   const result = await getSellerPublicProfileAction(username);
 
   if (!result.success || !result.profile) {
     notFound();
   }
 
-  // Aseguramos los tipos para TypeScript
   const profile = result.profile as ProfileData;
   const products = (result.products as Product[]) || [];
 
@@ -72,17 +65,13 @@ export default async function SellerPage({ params }: SellerPageProps) {
           {products.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
+                // --- INICIO DE LA CORRECCIÓN FINAL ---
+                // Se actualiza la llamada a ProductCard para que coincida con su definición.
                 <ProductCard
                   key={product.id!}
-                  id={product.id!}
-                  isWishlisted={false} 
-                  title={product.title}
-                  category={product.category}
-                  price={product.price}
-                  image_url={product.previewImageURL}
-                  detailUrl={`/product/${product.id}`}
-                  altText={`Imagen de ${product.title}`}
+                  product={product}
                 />
+                // --- FIN DE LA CORRECCIÓN FINAL ---
               ))}
             </div>
           ) : (

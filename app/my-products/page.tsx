@@ -1,5 +1,4 @@
 // --- ARCHIVO FINAL Y CORREGIDO: app/my-products/page.tsx ---
-// CORRECCIÓN: Se añade el 'onClick' que faltaba en el botón de cancelar del toast.
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -75,7 +74,6 @@ export default function MyProductsPage() {
         if (!currentUser) return toast.error("Debes estar autenticado.");
         toast.warning(`¿Seguro que quieres borrar "${productTitle}"?`, {
             action: { label: 'Confirmar Borrado', onClick: () => executeDeletion(productId) },
-            // ---> CORRECCIÓN: Añadimos un onClick vacío para cumplir con el tipo de la librería.
             cancel: { label: 'Cancelar', onClick: () => {} },
             duration: 10000,
         });
@@ -96,7 +94,7 @@ export default function MyProductsPage() {
                         <p className="mt-2 text-lg text-slate-500">Gestiona las plantillas y herramientas que has puesto a la venta.</p>
                     </div>
                     <Link href="/upload" className="px-6 py-3 bg-accent text-white font-bold rounded-md hover:bg-accent-hover transition-colors duration-300 whitespace-nowrap self-start sm:self-center">
-                         Subir Nuevo Producto
+                        Subir Nuevo Producto
                     </Link>
                 </div>
                 
@@ -111,14 +109,7 @@ export default function MyProductsPage() {
                         {validProducts.map(product => (
                             <ProductCard
                                 key={product.id!}
-                                id={product.id!}
-                                isWishlisted={false}
-                                image_url={product.previewImageURL}
-                                title={product.title}
-                                price={product.price}
-                                category={product.category}
-                                detailUrl={`/product/${product.id}`}
-                                altText={`Imagen de ${product.title}`}
+                                product={product}
                                 editUrl={`/my-products/edit/${product.id}`}
                                 onDelete={() => handleDeleteProduct(product.id!, product.title)}
                             />

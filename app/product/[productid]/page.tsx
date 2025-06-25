@@ -1,20 +1,21 @@
-// --- ARCHIVO CORREGIDO: app/product/[productid]/page.tsx ---
+// --- ARCHIVO FINAL Y CORREGIDO ---
 'use server';
 
 import type { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
-// Importaciones de acciones y tipos desde sus ubicaciones correctas
+// Importaciones de acciones y tipos
 import { getProductDetailsForDisplayAction } from '@/app/actions/product.actions';
 import { getReviewsForProductAction } from '@/app/actions';
 import { type Product } from '@/types';
 import ProductDetailClient from './ProductDetailClient';
 
-// La interfaz debe coincidir con el nombre de la carpeta dinámica
+// --- CORRECCIÓN ---
+// La interfaz ahora usa 'productId' para coincidir con el nombre de la carpeta '[productId]'
 interface ProductDetailPageProps {
   params: {
-    productid: string; // Usamos 'productid' en minúsculas
+    productId: string; 
   };
 }
 
@@ -23,17 +24,18 @@ export async function generateMetadata(
   { params }: ProductDetailPageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const productId = params.productid; // Usamos 'productid' en minúsculas
+  // --- CORRECCIÓN --- Se usa params.productId
+  const productId = params.productId; 
   const result = await getProductDetailsForDisplayAction(productId);
- 
+  
   if (!result.success || !result.product) {
     return {
       title: 'Producto no encontrado | Shark Market',
     }
   }
- 
+  
   const product = result.product;
- 
+  
   return {
     title: `${product.title} | Shark Market`,
     description: product.description?.substring(0, 155) || 'Descubre esta herramienta en Shark Market.',
@@ -47,7 +49,8 @@ export async function generateMetadata(
 
 // El componente de la página, que es un Server Component
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const currentProductId = params.productid; // Usamos 'productid' en minúsculas
+  // --- CORRECIÓN --- Se usa params.productId
+  const currentProductId = params.productId; 
 
   if (!currentProductId) {
     notFound(); 
