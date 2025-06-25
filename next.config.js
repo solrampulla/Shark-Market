@@ -1,5 +1,3 @@
-// next.config.js
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -8,35 +6,34 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.pexels.com',
         port: '',
-        pathname: '**',
+        pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com', // El que ya teníamos
+        hostname: 'firebasestorage.googleapis.com',
         port: '',
-        pathname: '**',
+        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'public.readdy.ai',
         port: '',
-        pathname: '**',
+        pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
+        hostname: 'lh3.googleusercontent.com', // Para avatares de usuarios de Google
         port: '',
-        pathname: '**',
+        pathname: '/**',
       },
-      // --- AÑADE ESTE ÚLTIMO BLOQUE ---
       {
         protocol: 'https',
-        hostname: 'storage.googleapis.com', // La nueva variación
+        hostname: 'storage.googleapis.com', // El que soluciona el error de las imágenes
         port: '',
-        pathname: '**',
+        pathname: '/**',
       },
     ],
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
