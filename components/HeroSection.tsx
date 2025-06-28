@@ -1,4 +1,4 @@
-// --- VERSIÓN FINAL CON LA IMAGEN ESPECÍFICA QUE QUIERES ---
+// --- VERSIÓN FINAL QUE USA LAS NUEVAS CONSTANTES ---
 import Link from 'next/link';
 import Image from 'next/image';
 import { SITE_HERO } from '@/lib/constants';
@@ -11,14 +11,17 @@ const HeroSection = () => {
           
           <div className="md:w-1/2 text-center md:text-left">
             
+            {/* 1. Nuevo Pre-título */}
             <p className="text-sm font-semibold uppercase text-accent tracking-widest mb-4">
               {SITE_HERO.pretitle}
             </p>
 
+            {/* 2. Título Principal */}
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
               {SITE_HERO.title}
             </h1>
 
+            {/* 3. Subtítulo */}
             <p className="mt-6 text-lg lg:text-xl text-slate-300 max-w-xl mx-auto md:mx-0">
               {SITE_HERO.subtitle}
             </p>
@@ -35,9 +38,8 @@ const HeroSection = () => {
           </div>
 
           <div className="md:w-1/2 mt-8 md:mt-0">
-            {/* --- CAMBIO IMPORTANTE: AQUÍ VA TU IMAGEN --- */}
             <Image
-              src="https://storage.googleapis.com/generative-ai-public/images/a6c8e310-749e-4a67-93ae-c692df874837" 
+              src="https://images.pexels.com/photos/3760813/pexels-photo-3760813.jpeg" 
               alt="Profesional logrando el éxito con herramientas de negocio"
               width={600}
               height={600}
