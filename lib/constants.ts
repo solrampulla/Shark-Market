@@ -1,6 +1,16 @@
 // ========================================================================
-// ARCHIVO COMPLETO Y CORREGIDO: lib/constants.ts
+// ARCHIVO COMPLETO Y CORREGIDO
 // ========================================================================
+
+// --- Textos de Marketing y Contenido del Sitio ---
+
+// CORRECCIÓN: Se reestructura el objeto SITE_HERO para incluir un pre-título
+export const SITE_HERO = {
+  pretitle: "TU MARKETPLACE DE KNOW-HOW EMPRESARIAL",
+  title: "La Ventaja que se Compra.",
+  subtitle: "Accede a sistemas de negocio y estrategias validadas por líderes de la industria. El atajo definitivo para escalar tus resultados."
+};
+
 
 // --- Listas para Formularios y Filtros ---
 
@@ -24,7 +34,6 @@ export const INDUSTRIES = [
   { value: 'other', label: 'Otro' },
 ];
 
-// NOTA: He ajustado esta lista para que refleje el TIPO de producto digital.
 export const PRODUCT_TYPES = [
   { value: 'template', label: 'Plantilla' },
   { value: 'guide', label: 'Guía' },
@@ -33,7 +42,6 @@ export const PRODUCT_TYPES = [
   { value: 'report', label: 'Informe' },
 ];
 
-// Usamos códigos de idioma estándar (ISO 639-1) para el 'value'.
 export const LANGUAGES = [
   { value: 'es', label: 'Español' },
   { value: 'en', label: 'Inglés' },
