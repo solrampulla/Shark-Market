@@ -46,7 +46,7 @@ const HeroSection = () => {
 
           <div className="md:w-1/2 mt-8 md:mt-0">
             <Image
-              src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg" 
+              src="c:\Users\sole0\Desktop\222d5573-340f-4107-82ae-2123063a7404.png" 
               alt="Equipo de emprendedores colaborando en una startup"
               width={600}
               height={450}
