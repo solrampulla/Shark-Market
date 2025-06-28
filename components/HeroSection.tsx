@@ -1,28 +1,29 @@
-// --- VERSIÓN FINAL QUE USA LAS NUEVAS CONSTANTES ---
+// --- VERSIÓN CON DISEÑO REVERTIDO (FONDO BLANCO) Y TEXTOS FINALES ---
 import Link from 'next/link';
 import Image from 'next/image';
-import { SITE_HERO } from '@/lib/constants';
+import { SITE_HERO } from '@/lib/constants'; // Seguimos usando las constantes para el texto
 
 const HeroSection = () => {
   return (
-    <section className="bg-slate-900 text-white">
+    // 1. VOLVEMOS AL FONDO BLANCO
+    <section className="bg-white">
       <div className="container mx-auto px-4 py-16 sm:py-24 lg:py-32">
         <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24">
           
           <div className="md:w-1/2 text-center md:text-left">
             
-            {/* 1. Nuevo Pre-título */}
+            {/* Usamos los textos finales que definimos */}
             <p className="text-sm font-semibold uppercase text-accent tracking-widest mb-4">
               {SITE_HERO.pretitle}
             </p>
 
-            {/* 2. Título Principal */}
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
+            {/* 2. AJUSTAMOS EL COLOR DEL TÍTULO PARA FONDO CLARO */}
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
               {SITE_HERO.title}
             </h1>
 
-            {/* 3. Subtítulo */}
-            <p className="mt-6 text-lg lg:text-xl text-slate-300 max-w-xl mx-auto md:mx-0">
+            {/* 3. AJUSTAMOS EL COLOR DEL SUBTÍTULO PARA FONDO CLARO */}
+            <p className="mt-6 text-lg lg:text-xl text-slate-600 max-w-xl mx-auto md:mx-0">
               {SITE_HERO.subtitle}
             </p>
 
@@ -31,19 +32,28 @@ const HeroSection = () => {
                 href="/search"
                 className="w-full sm:w-auto inline-block px-8 py-3 bg-accent text-white font-bold rounded-lg shadow-lg hover:bg-accent-hover transition-transform duration-300 hover:scale-105"
               >
+                {/* El texto del botón viene de tu última imagen */}
                 Explorar Estrategias
               </Link>
+              {/* Dejamos el CTA secundario por si lo quieres en el futuro */}
+               <Link
+                 href="/upload"
+                 className="w-full sm:w-auto font-semibold text-slate-700 hover:text-accent transition"
+               >
+                 Conviértete en Vendedor
+               </Link>
             </div>
             
           </div>
 
           <div className="md:w-1/2 mt-8 md:mt-0">
+            {/* 4. VOLVEMOS A LA IMAGEN ORIGINAL */}
             <Image
-              src="https://images.pexels.com/photos/3760813/pexels-photo-3760813.jpeg" 
-              alt="Profesional logrando el éxito con herramientas de negocio"
+              src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg" 
+              alt="Equipo de emprendedores colaborando en una startup"
               width={600}
-              height={600}
-              className="rounded-lg shadow-2xl object-cover w-full h-full"
+              height={450}
+              className="rounded-lg shadow-2xl object-cover"
               priority 
             />
           </div>
