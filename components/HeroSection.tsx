@@ -1,11 +1,16 @@
+import React from 'react'; // <-- ESTA ES LA LÍNEA QUE SOLUCIONA EL ERROR DE BUILD.
 import Image from 'next/image';
 import Link from 'next/link';
 
 const HeroSection = (): JSX.Element => {
   return (
+    // Contenedor principal con fondo blanco y padding generoso para dar "aire" y sensación de lujo.
     <section className="bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 py-24 sm:py-32">
+        {/* Usamos 'grid' para un control más robusto y moderno del layout de dos columnas. */}
         <div className="grid grid-cols-1 items-center gap-x-16 gap-y-16 lg:grid-cols-2">
+          
+          {/* --- COLUMNA IZQUIERDA: Manifiesto de Marca y Llamadas a la Acción --- */}
           <div className="text-center lg:text-left">
             <p className="text-base font-semibold leading-7 text-orange-600">
               Acceso Validado
@@ -32,6 +37,8 @@ const HeroSection = (): JSX.Element => {
               </a >
             </div>
           </div>
+
+          {/* --- COLUMNA DERECHA: El "Objeto de Poder" --- */}
           <div className="aspect-[3/2] w-full">
             <div className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50">
               <p className="text-center text-sm text-zinc-400 select-none">
@@ -41,6 +48,7 @@ const HeroSection = (): JSX.Element => {
               </p>
             </div>
           </div>
+
         </div>
       </div>
     </section>
