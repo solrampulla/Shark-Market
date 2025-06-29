@@ -1,4 +1,4 @@
-# Bizplan - Marketplace de Modelos de Negocio
+# Shark Market - Marketplace de Modelos de Negocio
 
 Bienvenido a Bizplan, una plataforma web construida con Next.js y **Supabase** diseñada para que emprendedores y consultores puedan subir, compartir y vender sus modelos de negocio.
 
