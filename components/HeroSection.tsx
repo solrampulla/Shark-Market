@@ -41,7 +41,7 @@ const HeroSection = () => {
           {/* --- BLOQUE DE IMAGEN ACTUALIZADO --- */}
           <div className="aspect-[3/2] w-full">
             <Image
-              src="opcion-1.jpg" // <-- ¡RECUERDA CAMBIAR ESTA LÍNEA!
+              src="/images/opcion-1.jpg" // <-- ¡RECUERDA CAMBIAR ESTA LÍNEA!
               alt="Herramientas y estrategias de negocio de Shark Market"
               width={1200}
               height={800}
