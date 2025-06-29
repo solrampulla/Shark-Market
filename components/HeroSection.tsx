@@ -14,7 +14,7 @@ const HeroSection = () => {
               La Ventaja que se Compra.
             </h1>
             <p className="mt-6 text-lg leading-8 text-zinc-600">
-              Accede a sistemas de negocio y estrategias validadas por líderes de la industria.
+              Accede a sistemas de negocio y estrategias 100% validadas por líderes de la industria.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
               <Link 
@@ -35,7 +35,7 @@ const HeroSection = () => {
           {/* --- BLOQUE DE IMAGEN CON EFECTO DE FUNDIDO --- */}
           <div className="relative aspect-[3/2] w-full">
             <Image
-              src="/images/image-9.jpg" // <-- Cambia a tu imagen
+              src="/images/opcion-9.jpg" // <-- Cambia a tu imagen
               alt="Estrategia y herramientas de negocio de Shark Market"
               width={1200}
               height={800}
