@@ -1,7 +1,8 @@
-// --- VERSIÓN ORIGINAL Y FUNCIONAL ---
+// --- Misión 1: Solo textos modificados ---
 import Link from 'next/link';
 import Image from 'next/image';
-import { SITE_HERO } from '@/lib/constants';
+// NOTA: Ya no necesitamos SITE_HERO porque hemos puesto el texto directamente.
+// import { SITE_HERO } from '@/lib/constants'; 
 
 const HeroSection = () => {
   return (
@@ -11,35 +12,41 @@ const HeroSection = () => {
           
           <div className="md:w-1/2 text-center md:text-left">
             
+            {/* --- TEXTO MODIFICADO --- */}
             <p className="text-sm font-semibold uppercase text-accent tracking-widest mb-4">
-              {SITE_HERO.pretitle}
+              Acceso Validado
             </p>
 
+            {/* --- TEXTO MODIFICADO --- */}
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
-              {SITE_HERO.title}
+              El Código de los Tiburones.
             </h1>
 
+            {/* --- TEXTO MODIFICADO --- */}
             <p className="mt-6 text-lg lg:text-xl text-slate-600 max-w-xl mx-auto md:mx-0">
-              {SITE_HERO.subtitle}
+              Usa las mismas estrategias y sistemas de negocio que la élite para construir tu próximo gran éxito. El atajo definitivo para escalar tus resultados.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
               <Link
-                href="/search"
+                // --- ENLACE Y TEXTO MODIFICADO ---
+                href="/productos"
                 className="w-full sm:w-auto inline-block px-8 py-3 bg-accent text-white font-bold rounded-lg shadow-lg hover:bg-accent-hover transition-transform duration-300 hover:scale-105"
               >
-                Explorar Estrategias
+                Descifrar el Código
               </Link>
               <Link
-                 href="/upload"
+                // --- ENLACE Y TEXTO MODIFICADO ---
+                 href="/vender"
                  className="w-full sm:w-auto font-semibold text-slate-700 hover:text-accent transition"
                >
-                 Conviértete en Vendedor
+                 Conviértete en Tiburón
                </Link>
             </div>
             
           </div>
 
+            {/* --- NINGÚN CAMBIO EN LA IMAGEN TODAVÍA --- */}
           <div className="md:w-1/2 mt-8 md:mt-0">
             <Image
               src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg" 
