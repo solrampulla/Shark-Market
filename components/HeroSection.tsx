@@ -8,7 +8,7 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
           <div className="text-center lg:text-left">
             <p className="text-base font-semibold uppercase tracking-widest text-orange-600">
-            Marketplace de Know-How Empresarial
+            Tu Marketplace de Know-How Empresarial
             </p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-zinc-900 sm:text-6xl">
             La Ventaja que se Compra.
