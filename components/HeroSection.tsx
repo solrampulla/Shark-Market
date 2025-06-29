@@ -37,13 +37,19 @@ const HeroSection = () => {
               </Link>
             </div>
           </div>
+          
+          {/* --- BLOQUE DE IMAGEN ACTUALIZADO --- */}
           <div className="aspect-[3/2] w-full">
-            <div className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50">
-              <p className="select-none text-sm text-zinc-400">
-                Espacio para tu "Imagen Heroica"
-              </p>
-            </div>
+            <Image
+              src="opcion-1.jpg" // <-- ¡RECUERDA CAMBIAR ESTA LÍNEA!
+              alt="Herramientas y estrategias de negocio de Shark Market"
+              width={1200}
+              height={800}
+              className="h-full w-full rounded-xl bg-zinc-100 object-cover shadow-xl"
+              priority
+            />
           </div>
+
         </div>
       </div>
     </section>
