@@ -20,7 +20,7 @@ const HeroSection = () => {
             
             {/* --- TEXTO RESTAURADO A TU VERSIÓN ORIGINAL --- */}
             <p className="mt-6 text-lg leading-8 text-zinc-600">
-              Accede a sistemas de negocio y estrategias 100% validadas por líderes de la industria. El atajo definitivo para acelerar tus resultados.
+              Accede a sistemas de negocio y estrategias 100% validadas por líderes de la industria.
             </p>
 
             <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
