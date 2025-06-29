@@ -43,8 +43,8 @@ const HeroSection = () => {
             <Image
               src="/images/opcion-5.png" // <-- ¡RECUERDA CAMBIAR ESTA LÍNEA!
               alt="Herramientas y estrategias de negocio de Shark Market"
-              width={1200}
-              height={800}
+              width={1024}
+              height={1536}
               className="h-full w-full rounded-xl bg-zinc-100 object-cover shadow-xl"
               priority
             />
