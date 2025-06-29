@@ -1,51 +1,60 @@
-import React from 'react';
-import Image from 'next/image';
+// --- VERSIÓN ORIGINAL Y FUNCIONAL ---
 import Link from 'next/link';
+import Image from 'next/image';
+import { SITE_HERO } from '@/lib/constants';
 
-const HeroSection = (): JSX.Element => {
-  return (
-    <section className="bg-white">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8 py-24 sm:py-32">
-        <div className="grid grid-cols-1 items-center gap-x-16 gap-y-16 lg:grid-cols-2">
-          <div className="text-center lg:text-left">
-            <p className="text-base font-semibold leading-7 text-orange-600">
-              Acceso Validado
-            </p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-zinc-900 sm:text-6xl">
-              El Código de los Tiburones.
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-zinc-600">
-              Usa las mismas estrategias y sistemas de negocio que la élite para construir
-              tu próximo gran éxito. El atajo definitivo para escalar tus resultados.
-            </p>
-            <div className="mt-10 flex items-center justify-center lg:justify-start gap-x-6">
-              <Link
-                href="/productos"
-                className="rounded-md bg-zinc-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-colors duration-200"
-              >
-                Descifrar el Código
-              </Link>
-              <Link
-                href="/vender"
-                className="group text-sm font-semibold leading-6 text-zinc-900"
-              >
-                Conviértete en Tiburón <span className="transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true">→</span>
-              </Link>
-            </div>
-          </div>
-          <div className="aspect-[3/2] w-full">
-            <div className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50">
-              <p className="text-center text-sm text-zinc-400 select-none">
-                Espacio para tu "Imagen Heroica"
-                <br />
-                (Render 3D, Foto de Producto, etc.)
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+const HeroSection = () => {
+  return (
+    <section className="bg-white">
+      <div className="container mx-auto px-4 py-24 sm:py-32 lg:py-40">
+        <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24">
+          
+          <div className="md:w-1/2 text-center md:text-left">
+            
+            <p className="text-sm font-semibold uppercase text-accent tracking-widest mb-4">
+              {SITE_HERO.pretitle}
+            </p>
+
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+              {SITE_HERO.title}
+            </h1>
+
+            <p className="mt-6 text-lg lg:text-xl text-slate-600 max-w-xl mx-auto md:mx-0">
+              {SITE_HERO.subtitle}
+            </p>
+
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+              <Link
+                href="/search"
+                className="w-full sm:w-auto inline-block px-8 py-3 bg-accent text-white font-bold rounded-lg shadow-lg hover:bg-accent-hover transition-transform duration-300 hover:scale-105"
+              >
+                Explorar Estrategias
+              </Link>
+              <Link
+                 href="/upload"
+                 className="w-full sm:w-auto font-semibold text-slate-700 hover:text-accent transition"
+               >
+                 Conviértete en Vendedor
+               </Link>
+            </div>
+            
+          </div>
+
+          <div className="md:w-1/2 mt-8 md:mt-0">
+            <Image
+              src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg" 
+              alt="Equipo de emprendedores colaborando en una startup"
+              width={600}
+              height={450}
+              className="rounded-lg shadow-2xl object-cover"
+              priority 
+            />
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default HeroSection;
