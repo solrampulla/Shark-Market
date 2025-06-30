@@ -27,13 +27,26 @@ const HeroSection = () => {
                 href="/vender" 
                 className="text-sm font-semibold leading-6 text-zinc-900 transition-colors hover:text-orange-600"
               >
-              Vende tu Know-How
+                Vende tu Know-How
               </Link>
             </div>
           </div>
           
+          {/* --- BLOQUE DE IMAGEN COMPLETO Y CORREGIDO --- */}
           <div className="relative aspect-[3/2] w-full">
-            {/* Aquí va tu componente Image final */}
+            <Image
+              src="/images/option-5" // <-- ¡RECUERDA CAMBIAR ESTA RUTA!
+              alt="Herramientas y estrategias de negocio de Shark Market"
+              width={1200}
+              height={800}
+              className="h-full w-full rounded-xl bg-zinc-100 object-cover object-center"
+              priority
+            />
+            {/* Este div crea el efecto de fundido con el fondo blanco */}
+            <div 
+              className="absolute inset-0 rounded-xl"
+              style={{ background: 'radial-gradient(ellipse at center, transparent 55%, white 95%)' }}
+            ></div>
           </div>
         </div>
       </div>
