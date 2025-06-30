@@ -1,5 +1,4 @@
 'use client'; 
-
 import React from 'react';
 import { type Product } from '@/types'; 
 import ProductCard from '@/components/ProductCard';
@@ -15,11 +14,11 @@ export default function FeaturedSection({ products, isLoading }: FeaturedSection
     return (
       <section id="featured-products">
         <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl mb-10">
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl mb-10">
             Herramientas Destacadas
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* ...código del esqueleto de carga... */}
+           {/* ...código del esqueleto de carga... */}
           </div>
         </div>
       </section>
@@ -30,7 +29,7 @@ export default function FeaturedSection({ products, isLoading }: FeaturedSection
     return (
       <section id="featured-products">
         <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl mb-4">
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl mb-4">
             Herramientas Destacadas
           </h2>
           <p className="text-center text-slate-500">
@@ -45,18 +44,12 @@ export default function FeaturedSection({ products, isLoading }: FeaturedSection
     <section id="featured-products">
       <div className="container mx-auto">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
             Herramientas Destacadas
           </h2>
         </div>
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product) => ( 
-            <ProductCard
-              key={product.id!}
-              product={product}
-            />
-          ))}
+          {/* ...código que muestra los productos... */}
         </div>
       </div>
     </section>

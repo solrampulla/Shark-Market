@@ -27,7 +27,7 @@ const HeroSection = () => {
                 href="/vender" 
                 className="text-sm font-semibold leading-6 text-zinc-900 transition-colors hover:text-orange-600"
               >
-                  Vende tu Know-How
+              Vende tu Know-How
               </Link>
             </div>
           </div>
