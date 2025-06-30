@@ -2,57 +2,43 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const HeroSection = () => {
-  return (
-    <section className="bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
-        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
-          <div className="text-center lg:text-left">
-            <p className="text-base font-semibold uppercase tracking-widest text-orange-600">
-            Tu Marketplace de Know-How Empresarial
-            </p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-zinc-900 sm:text-6xl">
-            La Ventaja que se Compra.
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-zinc-600">
-              Accede a sistemas de negocio y estrategias 100% validadas por líderes de la industria.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
-              <Link 
-                href="/productos" 
-                className="rounded-md bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-orange-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-              >
-                Accede a las Herramientas
-              </Link>
-              <Link 
-                href="/vender" 
-                className="group text-sm font-semibold leading-6 text-zinc-900"
-              >
-                Conviértete en Tiburón
-              </Link>
-            </div>
-          </div>
-          
-          {/* --- BLOQUE DE IMAGEN CON EFECTO DE FUNDIDO --- */}
-          <div className="relative aspect-[3/2] w-full">
-            <Image
-              src="/images/opcion-9.jpg" // <-- Cambia a tu imagen
-              alt="Estrategia y herramientas de negocio de Shark Market"
-              width={1200}
-              height={800}
-              className="h-full w-full rounded-xl bg-zinc-100 object-cover object-center"
-              priority
-            />
-            {/* Este div crea el efecto de fundido con el fondo blanco */}
-            <div 
-              className="absolute inset-0 rounded-xl"
-              style={{ background: 'radial-gradient(circle, transparent 65%, white 90%)' }}
-            ></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  return (
+    <section className="bg-white">
+      <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
+        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+          <div className="text-center lg:text-left">
+            <p className="text-base font-semibold uppercase tracking-widest text-orange-600">
+              Marketplace de Know-How Empresarial
+            </p>
+            <h1 className="mt-2 text-4xl font-bold tracking-tight text-zinc-900 sm:text-6xl">
+              La Ventaja que se Compra.
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-zinc-600">
+              Accede a sistemas de negocio y estrategias 100% validadas por líderes de la industria.
+            </p>
+            <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
+              <Link 
+                href="/productos" 
+                className="rounded-md bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-orange-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+              >
+                Accede a las Herramientas
+              </Link>
+              <Link 
+                href="/vender" 
+                className="text-sm font-semibold leading-6 text-zinc-900 transition-colors hover:text-orange-600"
+              >
+              Vende tu Know-How
+              </Link>
+            </div>
+          </div>
+          
+          <div className="relative aspect-[3/2] w-full">
+            {/* Aquí va tu componente Image final */}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default HeroSection;
-
