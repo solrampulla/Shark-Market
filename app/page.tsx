@@ -1,10 +1,8 @@
-// --- ARCHIVO FINAL Y DEFINITIVO: app/page.tsx ---
-// CORRECCIÓN: Se reestructura para ser un Server Component que carga datos
-// y los pasa a un Client Component, eliminando el error de raíz.
-import React, { Suspense } from 'react';
+// --- ARCHIVO CORREGIDO: app/page.tsx (con tipo explícito para TypeScript) ---
+import React from 'react';
 import type { Metadata } from 'next';
 
-// Imports de Componentes de UI (no cambian)
+// Imports de Componentes
 import HeroSection from "@/components/HeroSection";
 import FeaturedSection from "@/components/FeaturedSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
@@ -13,36 +11,48 @@ import CtaSection from "@/components/CtaSection";
 
 // Importaciones de Acciones y Tipos
 import { getFilteredProductsAction } from '@/app/actions/product.actions';
-import { type Product } from '@/types';
+import { type Product } from '@/types'; // <--- Ya importas el tipo aquí
 
-
-// Metadatos para la página principal (ya lo teníamos)
+// Metadatos (sin cambios)
 export const metadata: Metadata = {
   title: 'Shark Market | Tu Marketplace de Know-How Empresarial',
   description: 'Compra y vende planes de negocio, modelos financieros y estrategias creadas por expertos.',
 };
 
-
-// La página ahora es un Server Component que carga los datos
 export default async function HomePage() {
+  
+  console.log("--- [HomePage] Iniciando renderizado del servidor. ---");
 
-  // Cargamos los productos directamente en el servidor
+  // Añadimos logs antes y después de llamar a la acción
+  console.log("--- [HomePage] Llamando a getFilteredProductsAction... ---");
   const productResult = await getFilteredProductsAction({ sortBy: 'newest' });
   
-  // Extraemos solo los 4 primeros productos, o un array vacío si falla
-  const featuredProducts = (productResult.success && productResult.data) 
-    ? productResult.data.slice(0, 4) 
-    : [];
+  // ¡EL LOG MÁS IMPORTANTE! Mostramos el resultado completo de la acción
+  console.log("--- [HomePage] Resultado recibido de la acción:", JSON.stringify(productResult, null, 2));
+
+  // LA CORRECCIÓN ESTÁ EN ESTA LÍNEA
+  let featuredProducts: Product[] = []; // Especificamos que es un array de 'Product'
+
+  // Verificamos el resultado y actuamos en consecuencia
+  if (productResult.success && productResult.data) {
+    featuredProducts = productResult.data.slice(0, 4);
+    console.log(`--- [HomePage] ÉXITO: Se procesaron ${featuredProducts.length} productos destacados.`);
+  } else {
+    // Si la acción falló, lo registramos como un error
+    console.error("--- [HomePage] ERROR: La acción getFilteredProductsAction no tuvo éxito o no devolvió datos.");
+    if (productResult.error) {
+      console.error("--- [HomePage] Mensaje de error de la acción:", productResult.error);
+    }
+  }
 
   return (
     <>
       <HeroSection />
       <section className="py-24 bg-slate-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Pasamos los productos ya cargados al componente que los muestra */}
           <FeaturedSection
             products={featuredProducts}
-            isLoading={false} // La carga ya se hizo en el servidor
+            isLoading={false}
           />
         </div>
       </section>

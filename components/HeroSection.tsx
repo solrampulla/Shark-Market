@@ -19,7 +19,7 @@ const HeroSection = () => {
             <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
               <Link 
                 href="/productos" 
-                className="rounded-md bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-orange-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                className="rounded-md bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-orange-600"
               >
                 Accede a las Herramientas
               </Link>
@@ -31,27 +31,14 @@ const HeroSection = () => {
               </Link>
             </div>
           </div>
-          
-          {/* --- BLOQUE DE IMAGEN COMPLETO Y CORREGIDO --- */}
-          <div className="relative aspect-[3/2] w-full">
-            <Image
-              src="/images/option-5" // <-- ¡RECUERDA CAMBIAR ESTA RUTA!
-              alt="Herramientas y estrategias de negocio de Shark Market"
-              width={1200}
-              height={800}
-              className="h-full w-full rounded-xl bg-zinc-100 object-cover object-center"
-              priority
-            />
-            {/* Este div crea el efecto de fundido con el fondo blanco */}
-            <div 
-              className="absolute inset-0 rounded-xl"
-              style={{ background: 'radial-gradient(ellipse at center, transparent 55%, white 95%)' }}
-            ></div>
+          <div className="aspect-[3/2] w-full">
+            <div className="flex h-full w-full items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50">
+              <p className="select-none text-sm text-zinc-400">Imagen Heroica</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
   );
 };
-
 export default HeroSection;

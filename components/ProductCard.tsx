@@ -1,4 +1,5 @@
 // --- VERSIÓN FINAL Y UNIFICADA: components/ProductCard.tsx ---
+// Acepta props opcionales para ser compatible en toda la web.
 'use client';
 
 import Image from 'next/image';
@@ -8,10 +9,11 @@ import { WishlistButton } from './products/WishlistButton';
 import { type Product } from '@/types'; 
 import RatingStars from './RatingStars'; 
 
+// Definimos la interfaz para que acepte las propiedades opcionales
 interface ProductCardProps {
   product: Product;
   editUrl?: string;
-  onDelete?: () => void; // Simplificamos onDelete para que solo sea una función
+  onDelete?: (productId: string, title: string) => void;
 }
 
 export default function ProductCard({ product, editUrl, onDelete }: ProductCardProps) {
@@ -21,9 +23,16 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
   const displayCategory = product.category || "General";
   const detailUrl = `/product/${product.id}`;
 
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(product.id!, displayTitle);
+    }
+  };
+
   return (
     <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white transition-shadow duration-300 hover:shadow-2xl">
       
+      {/* SECCIÓN DE IMAGEN */}
       <div className="relative aspect-[16/9] w-full">
         <WishlistButton productId={product.id!} initialIsWishlisted={product.isWishlisted || false} />
         <Link href={detailUrl}>
@@ -45,6 +54,7 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         </Link>
       </div>
       
+      {/* SECCIÓN DE CONTENIDO Y PRECIO */}
       <div className="flex flex-1 flex-col p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-orange-600">{displayCategory}</p>
         <h3 className="mt-1 text-base font-bold leading-tight text-zinc-900">
@@ -56,12 +66,12 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         </h3>
         
         <div className="mt-2 h-5">
-          {(product.reviewCount ?? 0) > 0 ? (
+          {(product.reviewCount ?? 0) > 0 && (
             <div className="flex items-center">
               <RatingStars rating={product.averageRating || 0} starSize="text-xs" />
               <span className="ml-2 text-xs text-zinc-500">({product.reviewCount})</span>
             </div>
-          ) : null}
+          )}
         </div>
 
         <p className="mt-auto pt-4 text-xl font-bold text-zinc-900">
@@ -78,7 +88,7 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
             </Link>
           )}
           {onDelete && (
-            <button onClick={onDelete} className="rounded px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100" aria-label="Delete Product">
+            <button onClick={handleDelete} className="rounded px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100" aria-label="Delete Product">
               Borrar
             </button>
           )}
