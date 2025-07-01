@@ -1,4 +1,4 @@
-// --- VERSIÓN FINAL Y COMPLETA: components/ProductCard.tsx ---
+// --- VERSIÓN FINAL Y UNIFICADA: components/ProductCard.tsx ---
 'use client';
 
 import Image from 'next/image';
@@ -30,7 +30,6 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
   return (
     <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white transition-shadow duration-300 hover:shadow-2xl">
       
-      {/* SECCIÓN DE IMAGEN */}
       <div className="relative aspect-[16/9] w-full">
         <WishlistButton productId={product.id!} initialIsWishlisted={product.isWishlisted || false} />
         <Link href={detailUrl}>
@@ -52,7 +51,6 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         </Link>
       </div>
       
-      {/* SECCIÓN DE CONTENIDO */}
       <div className="flex flex-1 flex-col p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-orange-600">{displayCategory}</p>
         <h3 className="mt-1 text-base font-bold leading-tight text-zinc-900">
@@ -72,7 +70,6 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
           )}
         </div>
 
-        {/* SECCIÓN DE AUTOR ("TIBURÓN") */}
         <div className="mt-4 flex flex-grow items-center gap-3">
           {product.seller?.imageUrl ? (
             <Image
@@ -96,7 +93,6 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         </p>
       </div>
 
-      {/* SECCIÓN DE BOTONES (SOLO APARECE SI SE PASA editUrl o onDelete) */}
       {(editUrl || onDelete) && (
         <div className="flex items-center justify-end space-x-2 border-t border-zinc-200 bg-zinc-50 px-4 py-2">
           {editUrl && (
