@@ -1,4 +1,4 @@
-// --- VERSIÓN FINAL, UNIFICADA Y ROBUSTA: components/ProductCard.tsx ---
+// --- VERSIÓN FINAL Y COMPLETA: components/ProductCard.tsx ---
 'use client';
 
 import Image from 'next/image';
@@ -8,7 +8,6 @@ import { WishlistButton } from './products/WishlistButton';
 import { type Product } from '@/types'; 
 import RatingStars from './RatingStars'; 
 
-// INTERFAZ CORREGIDA: Acepta las propiedades opcionales de nuevo
 interface ProductCardProps {
   product: Product;
   editUrl?: string;
@@ -73,7 +72,7 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
           )}
         </div>
 
-        {/* SECCIÓN DE AUTOR */}
+        {/* SECCIÓN DE AUTOR ("TIBURÓN") */}
         <div className="mt-4 flex flex-grow items-center gap-3">
           {product.seller?.imageUrl ? (
             <Image
@@ -97,8 +96,7 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         </p>
       </div>
 
-      {/* --- LÓGICA CONDICIONAL RESTAURADA --- */}
-      {/* Esta sección solo se renderizará si la tarjeta recibe 'editUrl' o 'onDelete' */}
+      {/* SECCIÓN DE BOTONES (SOLO APARECE SI SE PASA editUrl o onDelete) */}
       {(editUrl || onDelete) && (
         <div className="flex items-center justify-end space-x-2 border-t border-zinc-200 bg-zinc-50 px-4 py-2">
           {editUrl && (
