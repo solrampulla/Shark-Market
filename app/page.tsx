@@ -1,4 +1,3 @@
-// --- ARCHIVO CORREGIDO: app/page.tsx (con tipo explícito para TypeScript) ---
 import React from 'react';
 import type { Metadata } from 'next';
 
@@ -11,48 +10,33 @@ import CtaSection from "@/components/CtaSection";
 
 // Importaciones de Acciones y Tipos
 import { getFilteredProductsAction } from '@/app/actions/product.actions';
-import { type Product } from '@/types'; // <--- Ya importas el tipo aquí
+import { type Product } from '@/types';
 
-// Metadatos (sin cambios)
+// Metadatos para la página principal
 export const metadata: Metadata = {
   title: 'Shark Market | Tu Marketplace de Know-How Empresarial',
   description: 'Compra y vende planes de negocio, modelos financieros y estrategias creadas por expertos.',
 };
 
+// La página ahora es un Server Component que carga los datos
 export default async function HomePage() {
   
-  console.log("--- [HomePage] Iniciando renderizado del servidor. ---");
-
-  // Añadimos logs antes y después de llamar a la acción
-  console.log("--- [HomePage] Llamando a getFilteredProductsAction... ---");
   const productResult = await getFilteredProductsAction({ sortBy: 'newest' });
   
-  // ¡EL LOG MÁS IMPORTANTE! Mostramos el resultado completo de la acción
-  console.log("--- [HomePage] Resultado recibido de la acción:", JSON.stringify(productResult, null, 2));
-
-  // LA CORRECCIÓN ESTÁ EN ESTA LÍNEA
-  let featuredProducts: Product[] = []; // Especificamos que es un array de 'Product'
-
-  // Verificamos el resultado y actuamos en consecuencia
-  if (productResult.success && productResult.data) {
-    featuredProducts = productResult.data.slice(0, 4);
-    console.log(`--- [HomePage] ÉXITO: Se procesaron ${featuredProducts.length} productos destacados.`);
-  } else {
-    // Si la acción falló, lo registramos como un error
-    console.error("--- [HomePage] ERROR: La acción getFilteredProductsAction no tuvo éxito o no devolvió datos.");
-    if (productResult.error) {
-      console.error("--- [HomePage] Mensaje de error de la acción:", productResult.error);
-    }
-  }
+  // Extraemos los productos o un array vacío si la acción falla
+  const featuredProducts: Product[] = (productResult.success && productResult.data) 
+    ? productResult.data.slice(0, 4) 
+    : [];
 
   return (
     <>
       <HeroSection />
       <section className="py-24 bg-slate-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Pasamos los productos ya cargados al componente que los muestra */}
           <FeaturedSection
             products={featuredProducts}
-            isLoading={false}
+            isLoading={false} // La carga ya se hizo en el servidor
           />
         </div>
       </section>
