@@ -1,3 +1,4 @@
+// app/page.tsx
 import React from 'react';
 import type { Metadata } from 'next';
 
@@ -12,31 +13,38 @@ import CtaSection from "@/components/CtaSection";
 import { getFilteredProductsAction } from '@/app/actions/product.actions';
 import { type Product } from '@/types';
 
-// Metadatos para la página principal
+// Metadatos (sin cambios)
 export const metadata: Metadata = {
   title: 'Shark Market | Tu Marketplace de Know-How Empresarial',
   description: 'Compra y vende planes de negocio, modelos financieros y estrategias creadas por expertos.',
 };
 
-// La página ahora es un Server Component que carga los datos
 export default async function HomePage() {
   
+  console.log("--- [HomePage] Iniciando renderizado del servidor... ---");
   const productResult = await getFilteredProductsAction({ sortBy: 'newest' });
-  
-  // Extraemos los productos o un array vacío si la acción falla
-  const featuredProducts: Product[] = (productResult.success && productResult.data) 
-    ? productResult.data.slice(0, 4) 
-    : [];
+  console.log("--- [HomePage] Resultado recibido de la acción:", JSON.stringify(productResult, null, 2));
+
+  let featuredProducts: Product[] = []; 
+
+  if (productResult.success && productResult.data) {
+    featuredProducts = productResult.data.slice(0, 4);
+    console.log(`--- [HomePage] ÉXITO: Se procesaron ${featuredProducts.length} productos.`);
+  } else {
+    console.error("--- [HomePage] ERROR: La acción no tuvo éxito.");
+    if (productResult.error) {
+      console.error("--- [HomePage] Mensaje de error:", productResult.error);
+    }
+  }
 
   return (
     <>
       <HeroSection />
       <section className="py-24 bg-slate-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Pasamos los productos ya cargados al componente que los muestra */}
           <FeaturedSection
             products={featuredProducts}
-            isLoading={false} // La carga ya se hizo en el servidor
+            isLoading={false}
           />
         </div>
       </section>
