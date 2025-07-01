@@ -1,16 +1,16 @@
 // lib/firebaseAdmin.ts
 import * as admin from 'firebase-admin';
 
-// Leemos las variables de entorno directamente
+// Leemos las variables de entorno
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-// --- LÍNEA CORREGIDA ---
-// Se elimina el .replace() para confiar en el manejo de Vercel
-const privateKey = process.env.FIREBASE_PRIVATE_KEY; 
+// --- ESTA ES LA LÍNEA CLAVE QUE RESTAURAMOS ---
+const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
+// Usamos el nombre del bucket que definimos en .env.local
 const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
-// La lógica de inicialización se mantiene, ahora debería funcionar
+// La lógica de inicialización se mantiene
 if (!admin.apps.length) {
   if (projectId && clientEmail && privateKey && bucketName) {
     try {
@@ -18,7 +18,7 @@ if (!admin.apps.length) {
         credential: admin.credential.cert({
           projectId,
           clientEmail,
-          privateKey, // Pasamos la clave directamente
+          privateKey,
         }),
         storageBucket: bucketName
       });
@@ -31,10 +31,10 @@ if (!admin.apps.length) {
     let missingVars = [];
     if (!projectId) missingVars.push('FIREBASE_PROJECT_ID');
     if (!clientEmail) missingVars.push('FIREBASE_CLIENT_EMAIL');
-    if (!privateKey) missingVars.push('FIREBASE_PRIVATE_KEY');
+    if (!privateKey) missingVars.push('FIREBASE_PRIVATE_KEY (o su formato es incorrecto)');
     if (!bucketName) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
     
-    console.error(`Faltan credenciales para Firebase Admin SDK. Variables faltantes: ${missingVars.join(', ')}`);
+    console.error(`Faltan credenciales para Firebase Admin SDK. Revisa tu archivo .env.local. Variables posiblemente faltantes o incorrectas: ${missingVars.join(', ')}`);
   }
 }
 
