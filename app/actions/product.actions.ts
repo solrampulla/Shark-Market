@@ -4,13 +4,15 @@ import * as admin from 'firebase-admin';
 import { adminDb, adminStorage } from "@/lib/firebaseAdmin";
 import { FieldValue, type QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
-import { Product, ProductFile, FilterCriteria } from '@/types';
+import { Product, ProductFile, FilterCriteria, ProfileData } from '@/types';
+import { headers } from 'next/headers';
+import { stripe } from '@/lib/stripe';
 
 export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
 
-    // --- LÍNEA TEMPORALMENTE DESACTIVADA PARA LA DEMO ---
+    // --- LÍNEA TEMPORALMENTE DESACTIVADA PARA LA DEMO ---
     // query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") query = query.where('category', '==', criteria.category);
@@ -55,9 +57,9 @@ export async function createProductAction(formData: FormData) {
     const price = Number(formData.get('price'));
     const type = formData.get('type') as string;
     const industry = formData.get('industry') as string;
-    const previewImage = formData.get('previewImage') as File | null;
+    const coverImageFile = formData.get('previewImage') as File | null;
     const additionalFiles = formData.getAll('files') as File[];
-    if (!title || !description || !category || !type || !industry || isNaN(price) || additionalFiles.length === 0 || !previewImage) {
+    if (!title || !description || !category || !type || !industry || isNaN(price) || additionalFiles.length === 0 || !coverImageFile) {
       return { success: false, message: "Por favor, completa todos los campos y sube los archivos necesarios." };
     }
     const bucket = adminStorage.bucket();
@@ -69,7 +71,7 @@ export async function createProductAction(formData: FormData) {
         await fileRef.makePublic();
         return fileRef.publicUrl();
     };
-    const previewImageURL = await uploadAndGetPublicUrl(previewImage, 'product-previews');
+    const coverImageUrl = await uploadAndGetPublicUrl(coverImageFile, 'product-covers');
     const processedFiles: ProductFile[] = await Promise.all(
       additionalFiles.map(async (file) => {
         const url = await uploadAndGetPublicUrl(file, 'product-files');
@@ -79,18 +81,32 @@ export async function createProductAction(formData: FormData) {
     const profileRef = adminDb.collection('profiles').doc(userId);
     const profileSnap = await profileRef.get();
     if (!profileSnap.exists) return { success: false, message: 'El perfil del vendedor no existe.' };
-    const sellerData = profileSnap.data();
-    const sellerName = sellerData?.full_name || 'Vendedor Anónimo';
-    const sellerUsername = sellerData?.username || null;
+    const sellerData = profileSnap.data() as ProfileData;
     const searchableKeywords = title.toLowerCase().split(' ').filter(word => word.length > 1);
+    
+    const newProductData: Omit<Product, 'id'> = {
+      title, description, price, currency: 'USD', category, type, industry,
+      language: 'Español', 
+      coverImageUrl: coverImageUrl,
+      sellerImageUrl: null,
+      additionalFiles: processedFiles,
+      seller: {
+        id: userId,
+        name: sellerData.full_name || 'Anónimo',
+        imageUrl: sellerData.avatar_url || '',
+        credential: sellerData.professional_title || 'Experto Verificado'
+      },
+      createdAt: Date.now(),
+      updatedAt: null,
+      tags: [], 
+      approved: true,
+      searchableKeywords: searchableKeywords,
+      reviewCount: 0, 
+      averageRating: 0,
+    };
+
     const newProductRef = adminDb.collection('products').doc();
-    await newProductRef.set({
-      title, description, price, currency: 'USD', category, type, industry,
-      language: 'Español', previewImageURL, additionalFiles: processedFiles,
-      sellerId: userId, sellerName: sellerName, sellerUsername: sellerUsername,
-      createdAt: FieldValue.serverTimestamp(), tags: [], approved: true,
-      searchableKeywords: searchableKeywords, reviewCount: 0, averageRating: 0,
-    });
+    await newProductRef.set(newProductData);
     revalidatePath('/');
     revalidatePath('/my-products');
     revalidatePath('/search');
@@ -131,22 +147,32 @@ export async function createAssistedProductAction(formData: FormData) {
             await fileRef.makePublic();
             return { name: file.name, url: fileRef.publicUrl(), size: file.size, type: file.type };
         };
-        const previewImageURL = (await uploadFile(previewImage, 'product-previews')).url;
+        const coverImageUrl = (await uploadFile(previewImage, 'product-previews')).url;
         const processedAdditionalFiles: ProductFile[] = await Promise.all(
             additionalFiles.map(file => uploadFile(file, 'product-files'))
         );
         const profileRef = adminDb.collection('profiles').doc(userId);
         const profileSnap = await profileRef.get();
         if (!profileSnap.exists) return { success: false, message: 'El perfil del vendedor no existe.' };
-        const sellerData = profileSnap.data()!;
-        const finalProductData = {
-            ...productData, currency: 'USD', previewImageURL,
-            additionalFiles: processedAdditionalFiles, sellerId: userId,
-            sellerName: sellerData.full_name || 'Anónimo',
-            sellerUsername: sellerData.username || null,
-            createdAt: FieldValue.serverTimestamp(), approved: true,
+        const sellerData = profileSnap.data() as ProfileData;
+        const finalProductData: Omit<Product, 'id'> = {
+            ...productData,
+            currency: 'USD', 
+            coverImageUrl,
+            sellerImageUrl: null,
+            additionalFiles: processedAdditionalFiles, 
+            seller: {
+              id: userId,
+              name: sellerData.full_name || 'Anónimo',
+              imageUrl: sellerData.avatar_url || '',
+              credential: sellerData.professional_title || 'Experto Verificado',
+            },
+            createdAt: Date.now(), 
+            updatedAt: null,
+            approved: true,
             searchableKeywords: productData.title.toLowerCase().split(' ').filter(word => word.length > 1),
-            reviewCount: 0, averageRating: 0,
+            reviewCount: 0, 
+            averageRating: 0,
         };
         const newProductRef = adminDb.collection('products').doc();
         await newProductRef.set(finalProductData);
@@ -163,17 +189,20 @@ export async function createAssistedProductAction(formData: FormData) {
 export async function updateProductAction(
   userId: string,
   productId: string,
-  productData: Omit<Product, 'id' | 'createdAt' | 'sellerName' | 'sellerId' | 'sellerUsername' | 'isWishlisted' | 'previewImageURL' | 'additionalFiles' | 'approved' | 'searchableKeywords' | 'averageRating' | 'reviewCount'>
+  productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'seller' | 'isWishlisted' | 'averageRating' | 'reviewCount' | 'searchableKeywords' | 'additionalFiles' | 'coverImageUrl' | 'sellerImageUrl' | 'approved'>
 ): Promise<{ success: boolean; message: string; }> {
   if (!userId || !productId) return { success: false, message: 'Faltan datos.' };
   try {
     const productRef = adminDb.collection('products').doc(productId);
     const doc = await productRef.get();
     if (!doc.exists) return { success: false, message: 'El producto no existe.' };
-    if (doc.data()?.sellerId !== userId) return { success: false, message: 'No tienes permiso.' };
-    const newKeywords = productData.title 
+    const existingData = doc.data();
+    if (existingData?.seller?.id !== userId) return { success: false, message: 'No tienes permiso.' };
+    
+    const newKeywords = productData.title 
         ? productData.title.toLowerCase().split(' ').filter(word => word.length > 1) 
-        : doc.data()?.searchableKeywords;
+        : existingData?.searchableKeywords;
+
     await productRef.update({
       ...productData,
       searchableKeywords: newKeywords,
@@ -191,35 +220,17 @@ export async function updateProductAction(
 }
 
 export async function getProductDetailsForDisplayAction(productId: string): Promise<{ success: boolean; product?: Product; error?: string; }> {
-    console.log(`[DEBUG] Iniciando getProductDetailsForDisplayAction para ID: ${productId}`);
-
     if (!productId) {
-        console.log("[DEBUG] Fallo inmediato: No se proporcionó ID de producto.");
         return { success: false, error: "No se proporcionó ID de producto." };
     }
-
     try {
         const productRef = adminDb.collection('products').doc(productId);
-        console.log(`[DEBUG] Referencia al documento creada: ${productRef.path}`);
-
         const productSnap = await productRef.get();
-        console.log("[DEBUG] Snapshot de Firestore obtenido.");
-
         if (!productSnap.exists) {
-            console.error(`[DEBUG - ERROR] ¡El documento NO EXISTE! productSnap.exists es falso para el ID: ${productId}`);
             return { success: false, error: "Producto no encontrado." };
         }
-
-        console.log(`[DEBUG] ¡El documento SÍ EXISTE! ID: ${productSnap.id}`);
         const productData = productSnap.data()!;
-        console.log(`[DEBUG] Datos del producto obtenidos. Aprobado: ${productData.approved}`);
-
-        if (!productData.approved) {
-            console.error(`[DEBUG - ERROR] El producto existe PERO no está aprobado.`);
-            return { success: false, error: "Este producto no está disponible." };
-        }
-        
-        console.log("[DEBUG] El producto está aprobado. Construyendo y devolviendo la respuesta final.");
+        // if (!productData.approved) { return { success: false, error: "Este producto no está disponible." }; }
         
         const plainProduct: Product = {
             id: productSnap.id,
@@ -229,9 +240,8 @@ export async function getProductDetailsForDisplayAction(productId: string): Prom
         } as Product;
         
         return { success: true, product: plainProduct };
-
     } catch (error: any) {
-        console.error(`[ACCIÓN - ERROR CRÍTICO] Excepción capturada en getProductDetailsForDisplayAction para ID ${productId}:`, error);
+        console.error(`[ACCIÓN] Error en getProductDetailsForDisplayAction para ID ${productId}:`, error);
         return { success: false, error: 'Error crítico del servidor.' };
     }
 }
@@ -239,7 +249,7 @@ export async function getProductDetailsForDisplayAction(productId: string): Prom
 export async function fetchSellerProductsAction(userId: string) {
     if (!userId) return { success: false, message: 'ID de vendedor no proporcionado.'};
     try {
-        const query = adminDb.collection('products').where('sellerId', '==', userId).orderBy('createdAt', 'desc');
+        const query = adminDb.collection('products').where('seller.id', '==', userId).orderBy('createdAt', 'desc');
         const snapshot = await query.get();
         if (snapshot.empty) return { success: true, data: [], count: 0 };
         const products = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
@@ -261,10 +271,9 @@ export async function deleteProductAction(userId: string, productId: string) {
     if (!userId || !productId) return { success: false, message: 'Faltan datos.'};
     try {
         const productRef = adminDb.collection('products').doc(productId);
-      // --- LÍNEA ERRÓNEA ELIMINADA ---
         const doc = await productRef.get();
         if (!doc.exists) return { success: false, message: "El producto no existe." };
-        if (doc.data()?.sellerId !== userId) return { success: false, message: "No tienes permiso."};
+        if (doc.data()?.seller?.id !== userId) return { success: false, message: "No tienes permiso."};
         
         await productRef.delete();
         
@@ -283,7 +292,7 @@ export async function deleteProductAction(userId: string, productId: string) {
 export async function getAllPublicProductsForSitemap(): Promise<{ id: string; updatedAt: admin.firestore.Timestamp | null; }[]> {
   try {
     const productsQuery = await adminDb.collection('products')
-      .where('approved', '==', true)
+      // .where('approved', '==', true) // Desactivado para la demo
       .select('updatedAt', 'createdAt')
       .get();
 

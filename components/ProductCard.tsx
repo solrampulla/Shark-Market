@@ -1,5 +1,4 @@
-// --- VERSIÓN FINAL Y UNIFICADA: components/ProductCard.tsx ---
-// Acepta props opcionales para ser compatible en toda la web.
+// --- VERSIÓN FINAL, UNIFICADA Y ROBUSTA: components/ProductCard.tsx ---
 'use client';
 
 import Image from 'next/image';
@@ -9,7 +8,7 @@ import { WishlistButton } from './products/WishlistButton';
 import { type Product } from '@/types'; 
 import RatingStars from './RatingStars'; 
 
-// Definimos la interfaz para que acepte las propiedades opcionales
+// INTERFAZ CORREGIDA: Acepta las propiedades opcionales de nuevo
 interface ProductCardProps {
   product: Product;
   editUrl?: string;
@@ -37,9 +36,9 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         <WishlistButton productId={product.id!} initialIsWishlisted={product.isWishlisted || false} />
         <Link href={detailUrl}>
           <div className="h-full w-full bg-zinc-100">
-            {product.previewImageURL ? (
+            {product.coverImageUrl ? (
               <Image
-                src={product.previewImageURL}
+                src={product.coverImageUrl}
                 alt={`Imagen de ${displayTitle}`}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -54,7 +53,7 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         </Link>
       </div>
       
-      {/* SECCIÓN DE CONTENIDO Y PRECIO */}
+      {/* SECCIÓN DE CONTENIDO */}
       <div className="flex flex-1 flex-col p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-orange-600">{displayCategory}</p>
         <h3 className="mt-1 text-base font-bold leading-tight text-zinc-900">
@@ -74,12 +73,32 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
           )}
         </div>
 
-        <p className="mt-auto pt-4 text-xl font-bold text-zinc-900">
+        {/* SECCIÓN DE AUTOR */}
+        <div className="mt-4 flex flex-grow items-center gap-3">
+          {product.seller?.imageUrl ? (
+            <Image
+              src={product.seller.imageUrl}
+              alt={product.seller.name || 'Avatar del vendedor'}
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-zinc-200"></div>
+          )}
+          <div>
+            <p className="text-sm font-semibold text-zinc-800">{product.seller?.name || 'Anónimo'}</p>
+            <p className="text-xs text-zinc-500">{product.seller?.credential || 'Experto Verificado'}</p>
+          </div>
+        </div>
+        
+        <p className="mt-4 pt-4 text-xl font-bold text-zinc-900">
           ${displayPrice}
         </p>
       </div>
 
-      {/* --- SECCIÓN DE BOTONES (SOLO APARECE SI SE PASA editUrl o onDelete) --- */}
+      {/* --- LÓGICA CONDICIONAL RESTAURADA --- */}
+      {/* Esta sección solo se renderizará si la tarjeta recibe 'editUrl' o 'onDelete' */}
       {(editUrl || onDelete) && (
         <div className="flex items-center justify-end space-x-2 border-t border-zinc-200 bg-zinc-50 px-4 py-2">
           {editUrl && (
