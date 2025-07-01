@@ -1,3 +1,4 @@
+// --- CACHE BUSTER v3 - 2025-07-01 13:14 CEST ---
 // app/page.tsx
 import React from 'react';
 import type { Metadata } from 'next';
