@@ -1,57 +1,35 @@
 'use client'; 
 import React from 'react';
 import { type Product } from '@/types'; 
-import ProductCard from '@/components/ProductCard';
+import ProductCard from '@/components/ProductCard'; // Asegúrate de que este componente exista
 
 interface FeaturedSectionProps {
-  products: Product[]; 
-  isLoading?: boolean;
+  products: Product[]; 
+  isLoading?: boolean;
 }
 
 export default function FeaturedSection({ products, isLoading }: FeaturedSectionProps) {
-  
-  if (isLoading) {
-    return (
-      <section id="featured-products">
-        <div className="container mx-auto text-center">
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl mb-10">
-            Herramientas Destacadas
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-           {/* ...código del esqueleto de carga... */}
-          </div>
-        </div>
-      </section>
-    );
-  }
+  
+  // Si está cargando o no hay productos, no renderiza nada.
+  // Esto hace el componente más limpio y robusto.
+  if (isLoading || !products || products.length === 0) {
+    return null; 
+  }
 
-  if (products.length === 0) {
-    return (
-      <section id="featured-products">
-        <div className="container mx-auto text-center">
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl mb-4">
-            Herramientas Destacadas
-          </h2>
-          <p className="text-center text-slate-500">
-            No hay productos para mostrar en este momento.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section id="featured-products">
-      <div className="container mx-auto">
-        <div className="mb-12 text-center">
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
-            Herramientas Destacadas
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* ...código que muestra los productos... */}
-        </div>
-      </div>
-    </section>
-  );
+  return (
+    <section id="featured-products">
+      <div className="container mx-auto">
+        <div className="mb-12 text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
+            Herramientas Destacadas
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
