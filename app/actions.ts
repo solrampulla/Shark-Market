@@ -1,179 +1,204 @@
-// --- ARCHIVO CORREGIDO: app/actions.ts ---
-// CORRECCIÓN: Se añade la importación de 'firebase-admin' que faltaba.
 'use server';
 
-import * as admin from 'firebase-admin'; // <--- LA IMPORTACIÓN QUE FALTABA
+import * as admin from 'firebase-admin';
 import { adminDb, adminStorage } from "@/lib/firebaseAdmin";
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, type QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
+import { Product, ProductFile, FilterCriteria, ProfileData } from '@/types';
 import { headers } from 'next/headers';
 import { stripe } from '@/lib/stripe';
-import { Review, PurchasedProductEntry, ProfileData, Product } from '@/types';
 
-// --- ACCIONES NO RELACIONADAS CON PRODUCTOS ---
-
-export async function createOrderAction(userId: string, productId: string, productName: string, price: number, currency: string): Promise<{ success: boolean; sessionId?: string; error?: string }> {
-    if (!userId || !productId) return { success: false, error: 'Faltan datos.' };
-    try {
-        const orderRef = adminDb.collection('orders').doc();
-        await orderRef.set({ userId, productId, status: 'pending', amount: price, currency: currency, createdAt: new Date() });
-        const origin = headers().get('origin') || 'http://localhost:3000';
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [{
-                price_data: { currency: currency.toLowerCase(), product_data: { name: productName }, unit_amount: Math.round(price * 100) },
-                quantity: 1,
-            }],
-            mode: 'payment',
-            success_url: `${origin}/my-purchases?payment_success=true`,
-            cancel_url: `${origin}/product/${productId}?payment_canceled=true`,
-            metadata: { userId, orderId: orderRef.id, productId },
-        });
-        if (!session.id) throw new Error("No se pudo crear la sesión de Stripe.");
-        return { success: true, sessionId: session.id };
-    } catch (error: any) {
-        console.error('[Action] Error en createOrderAction:', error);
-        return { success: false, error: 'Error al procesar el pago.' };
-    }
-}
-
-export async function getUserProfileRoleAction(userId: string): Promise<{ role?: string | null; error?: string; }> {
-    if (!userId) return { error: "No se proporcionó ID." };
-    try {
-        const profileDocRef = adminDb.collection('profiles').doc(userId);
-        const profileSnap = await profileDocRef.get();
-        if (profileSnap.exists) return { role: profileSnap.data()?.role || null }; 
-        else return { error: "Perfil no encontrado." };
-    } catch (error: any) {
-        return { error: "Error del servidor." };
-    }
-}
-
-export async function fetchUserPurchasesAction(userId: string): Promise<{ success: boolean; data?: PurchasedProductEntry[]; message?: string; }> {
-    if (!userId) return { success: false, message: 'No autenticado.' };
-    try {
-        const accessRecordsQuery = adminDb.collection('user_product_access').where('userId', '==', userId);
-        const accessSnapshot = await accessRecordsQuery.get();
-        if (accessSnapshot.empty) return { success: true, data: [] };
-        const productIds = accessSnapshot.docs.map(doc => doc.data().productId);
-        if (productIds.length === 0) return { success: true, data: [] };
-        const productsQuery = adminDb.collection('products').where(admin.firestore.FieldPath.documentId(), 'in', productIds);
-        const productsSnapshot = await productsQuery.get();
-        const productsData = new Map(productsSnapshot.docs.map(doc => [doc.id, doc.data()]));
-        const purchases = accessSnapshot.docs.map(doc => {
-            const accessData = doc.data();
-            const productData = productsData.get(accessData.productId);
-            const files = productData?.additionalFiles || [];
-            const mainFileUrl = files.length > 0 ? files[0].url : '';
-            return {
-                id: accessData.productId, purchaseOrderId: accessData.orderId,
-                title: productData?.title || 'Producto no encontrado',
-                previewImageURL: productData?.previewImageURL || null,
-                purchaseGrantedAt: (accessData.grantedAt as admin.firestore.Timestamp)?.toMillis() || Date.now(),
-                fileURL: mainFileUrl,
-            };
-        });
-        return { success: true, data: purchases };
-    } catch (error: any) {
-        return { success: false, message: 'Error al cargar las compras.' };
-    }
-}
-
-export async function getSellerPublicProfileAction(username: string): Promise<{
-  success: boolean; profile?: ProfileData; products?: Product[]; message?: string;
-}> {
+export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
-    const profileQuery = await adminDb.collection('profiles').where('username', '==', username).limit(1).get();
-    if (profileQuery.empty) return { success: false, message: 'Vendedor no encontrado.' };
-    const sellerProfileDoc = profileQuery.docs[0];
-    const sellerProfile = { id: sellerProfileDoc.id, ...sellerProfileDoc.data() } as ProfileData;
-    if (!sellerProfile.role || sellerProfile.role.toLowerCase().trim() !== 'seller') {
-      return { success: false, message: 'Este usuario no es un vendedor.' };
+    let query: admin.firestore.Query = adminDb.collection('products');
+    query = query.where('approved', '==', true);
+
+    if (criteria.category && criteria.category !== "all") query = query.where('category', '==', criteria.category);
+    if (criteria.industry && criteria.industry !== "all") query = query.where('industry', '==', criteria.industry);
+    if (criteria.type && criteria.type !== "all") query = query.where('type', '==', criteria.type);
+    if (criteria.q) {
+        const searchTerms = criteria.q.toLowerCase().split(' ').filter(term => term.length > 1);
+        if (searchTerms.length > 0) query = query.where('searchableKeywords', 'array-contains-any', searchTerms);
     }
-    const productsQuery = await adminDb.collection('products').where('sellerId', '==', sellerProfile.id).where('approved', '==', true).orderBy('createdAt', 'desc').get();
-    const sellerProducts = productsQuery.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-    return { success: true, profile: sellerProfile, products: sellerProducts };
+    if (criteria.sortBy === 'price_asc') query = query.orderBy('price', 'asc');
+    else if (criteria.sortBy === 'price_desc') query = query.orderBy('price', 'desc');
+    else query = query.orderBy('createdAt', 'desc');
+    
+    const snapshot = await query.limit(24).get();
+    if (snapshot.empty) return { success: true, data: [], count: 0 };
+    
+    const products = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: (data.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
+            updatedAt: (data.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
+        } as Product;
+    });
+
+    return { success: true, data: products, count: products.length };
   } catch (error: any) {
-    console.error(`[Action] Error en getSellerPublicProfileAction para ${username}:`, error);
-    return { success: false, message: 'Error del servidor.' };
+    console.error('[Action] Error en getFilteredProductsAction:', error);
+    if (error.code === 'failed-precondition') return { success: false, error: 'Error de BD: Falta un índice para esta consulta.' };
+    return { success: false, error: 'No se pudieron obtener los productos.' };
   }
 }
 
-export async function getReviewsForProductAction(productId: string): Promise<{ success: boolean; reviews?: Review[]; message?: string;}> {
-    if (!productId) return { success: false, message: 'ID de producto no proporcionado.' };
-    try {
-        const reviewsQuery = await adminDb.collection('reviews').where('productId', '==', productId).orderBy('createdAt', 'desc').get();
-        if (reviewsQuery.empty) return { success: true, reviews: [] };
-        const reviews = reviewsQuery.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id, ...data,
-                createdAt: (data.createdAt as admin.firestore.Timestamp).toMillis(),
-            } as Review;
-        });
-        return { success: true, reviews };
-    } catch (error: any) {
-        console.error(`[Action] Error en getReviewsForProductAction para producto ${productId}:`, error);
-        return { success: false, message: 'Error al obtener las reseñas.' };
+export async function createProductAction(formData: FormData) {
+  const userId = formData.get('userId') as string;
+  if (!userId) return { success: false, message: "Usuario no autenticado." };
+  try {
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const category = formData.get('category') as string;
+    const price = Number(formData.get('price'));
+    const type = formData.get('type') as string;
+    const industry = formData.get('industry') as string;
+    const previewImage = formData.get('previewImage') as File | null;
+    const additionalFiles = formData.getAll('files') as File[];
+    if (!title || !description || !category || !type || !industry || isNaN(price) || additionalFiles.length === 0 || !previewImage) {
+      return { success: false, message: "Por favor, completa todos los campos y sube los archivos necesarios." };
     }
+    const bucket = adminStorage.bucket();
+    const uploadAndGetPublicUrl = async (file: File, folder: string): Promise<string> => {
+        const filePath = `${folder}/${userId}/${Date.now()}-${file.name}`;
+        const fileRef = bucket.file(filePath);
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await fileRef.save(buffer, { metadata: { contentType: file.type } });
+        await fileRef.makePublic();
+        return fileRef.publicUrl();
+    };
+    const previewImageURL = await uploadAndGetPublicUrl(previewImage, 'product-previews');
+    const processedFiles: ProductFile[] = await Promise.all(
+      additionalFiles.map(async (file) => {
+        const url = await uploadAndGetPublicUrl(file, 'product-files');
+        return { name: file.name, url: url, size: file.size, type: file.type };
+      })
+    );
+    const profileRef = adminDb.collection('profiles').doc(userId);
+    const profileSnap = await profileRef.get();
+    if (!profileSnap.exists) return { success: false, message: 'El perfil del vendedor no existe.' };
+    const sellerData = profileSnap.data();
+    const sellerName = sellerData?.full_name || 'Vendedor Anónimo';
+    const sellerUsername = sellerData?.username || null;
+    const searchableKeywords = title.toLowerCase().split(' ').filter(word => word.length > 1);
+    const newProductRef = adminDb.collection('products').doc();
+    await newProductRef.set({
+      title, description, price, currency: 'USD', category, type, industry,
+      language: 'Español', previewImageURL, additionalFiles: processedFiles,
+      sellerId: userId, sellerName: sellerName, sellerUsername: sellerUsername,
+      createdAt: FieldValue.serverTimestamp(), tags: [], approved: true,
+      searchableKeywords: searchableKeywords, reviewCount: 0, averageRating: 0,
+    });
+    revalidatePath('/');
+    revalidatePath('/my-products');
+    revalidatePath('/search');
+    return { success: true, message: '¡Producto creado con éxito!', productId: newProductRef.id };
+  } catch (error: any) {
+    console.error('[Action] Error en createProductAction:', error);
+    return { success: false, message: error.message || 'Error en el servidor al crear el producto.' };
+  }
 }
 
-export async function checkReviewEligibilityAction(userId: string, productId: string): Promise<{
-    canReview: boolean; hasReviewed: boolean; message: string;
-}> {
-    if (!userId || !productId) return { canReview: false, hasReviewed: false, message: 'Faltan datos.' };
-    try {
-        const purchaseQuery = await adminDb.collection('user_product_access').where('userId', '==', userId).where('productId', '==', productId).limit(1).get();
-        if (purchaseQuery.empty) return { canReview: false, hasReviewed: false, message: 'Debes comprar este producto.' };
-        const reviewQuery = await adminDb.collection('reviews').where('userId', '==', userId).where('productId', '==', productId).limit(1).get();
-        if (!reviewQuery.empty) return { canReview: false, hasReviewed: true, message: 'Ya has dejado una reseña.' };
-        return { canReview: true, hasReviewed: false, message: 'Puedes dejar una reseña.' };
-    } catch (error: any) {
-        console.error(`[Action] Error en checkReviewEligibilityAction para ${userId}/${productId}:`, error);
-        return { canReview: false, hasReviewed: false, message: 'Error del servidor.' };
-    }
+export async function updateProductAction(
+  userId: string,
+  productId: string,
+  productData: Omit<Product, 'id' | 'createdAt' | 'sellerName' | 'sellerId' | 'sellerUsername' | 'isWishlisted' | 'previewImageURL' | 'additionalFiles' | 'approved' | 'searchableKeywords' | 'averageRating' | 'reviewCount'>
+): Promise<{ success: boolean; message: string; }> {
+  if (!userId || !productId) return { success: false, message: 'Faltan datos.' };
+  try {
+    const productRef = adminDb.collection('products').doc(productId);
+    const doc = await productRef.get();
+    if (!doc.exists) return { success: false, message: 'El producto no existe.' };
+    if (doc.data()?.sellerId !== userId) return { success: false, message: 'No tienes permiso.' };
+    const newKeywords = productData.title 
+      ? productData.title.toLowerCase().split(' ').filter(word => word.length > 1) 
+      : doc.data()?.searchableKeywords;
+    await productRef.update({
+      ...productData,
+      searchableKeywords: newKeywords,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    revalidatePath(`/product/${productId}`);
+    revalidatePath('/my-products');
+    revalidatePath('/search');
+    revalidatePath('/');
+    return { success: true, message: 'Producto actualizado.' };
+  } catch (error: any) {
+    console.error('[Action] Error en updateProductAction:', error);
+    return { success: false, message: 'Error en el servidor.' };
+  }
 }
 
-export async function submitReviewAction(
-    userId: string,
-    productId: string,
-    rating: number,
-    comment: string
-): Promise<{ success: boolean, message: string }> {
-    if (!userId) return { success: false, message: 'Debes iniciar sesión.' };
-    if (rating < 1 || rating > 5) return { success: false, message: 'La calificación no es válida.' };
-    if (comment.trim().length < 10) return { success: false, message: 'El comentario es muy corto.' };
+export async function getProductDetailsForDisplayAction(productId: string): Promise<{ success: boolean; product?: Product; error?: string; }> {
+    if (!productId) {
+        return { success: false, error: "No se proporcionó ID de producto." };
+    }
     try {
-        const eligibility = await checkReviewEligibilityAction(userId, productId);
-        if (!eligibility.canReview) return { success: false, message: eligibility.message };
         const productRef = adminDb.collection('products').doc(productId);
-        const reviewRef = adminDb.collection('reviews').doc();
-        const userProfileRef = adminDb.collection('profiles').doc(userId);
-        await adminDb.runTransaction(async (transaction) => {
-            const productDoc = await transaction.get(productRef);
-            const userProfileDoc = await transaction.get(userProfileRef);
-            if (!productDoc.exists || !userProfileDoc.exists) throw new Error("Producto o perfil no encontrado.");
-            const productData = productDoc.data()!;
-            const userProfileData = userProfileDoc.data()!;
-            transaction.set(reviewRef, {
-                productId, userId, rating, comment: comment.trim(),
-                createdAt: FieldValue.serverTimestamp(),
-                buyerName: userProfileData.full_name || 'Anónimo',
-                buyerAvatarUrl: userProfileData.avatar_url || null
-            });
-            const currentReviewCount = productData.reviewCount || 0;
-            const currentAverageRating = productData.averageRating || 0;
-            const newReviewCount = currentReviewCount + 1;
-            const newAverageRating = ((currentAverageRating * currentReviewCount) + rating) / newReviewCount;
-            transaction.update(productRef, {
-                reviewCount: newReviewCount,
-                averageRating: newAverageRating
-            });
-        });
-        revalidatePath(`/product/${productId}`);
-        return { success: true, message: "¡Gracias! Tu reseña ha sido publicada." };
+        const productSnap = await productRef.get();
+        if (!productSnap.exists) {
+            return { success: false, error: "Producto no encontrado." };
+        }
+        const productData = productSnap.data()!;
+        if (!productData.approved) {
+            return { success: false, error: "Este producto no está disponible." };
+        }
+        
+        const plainProduct: Product = {
+            id: productSnap.id,
+            ...productData,
+            createdAt: (productData.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
+            updatedAt: (productData.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
+        } as Product;
+        
+        return { success: true, product: plainProduct };
     } catch (error: any) {
-        console.error(`[Action] Error en submitReviewAction para ${userId}/${productId}:`, error);
-        return { success: false, message: "No se pudo guardar tu reseña." };
+        console.error(`[ACCIÓN] Error en getProductDetailsForDisplayAction para ID ${productId}:`, error);
+        return { success: false, error: 'Error crítico del servidor.' };
+    }
+}
+
+export async function fetchSellerProductsAction(userId: string) {
+    if (!userId) return { success: false, message: 'ID de vendedor no proporcionado.'};
+    try {
+        const query = adminDb.collection('products').where('sellerId', '==', userId).orderBy('createdAt', 'desc');
+        const snapshot = await query.get();
+        if (snapshot.empty) return { success: true, data: [], count: 0 };
+        const products = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
+            const data = doc.data();
+            return { 
+                id: doc.id, 
+                ...data,
+                createdAt: (data.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
+                updatedAt: (data.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
+            } as Product;
+        });
+        return { success: true, data: products, count: products.length };
+    } catch (error: any) {
+        return { success: false, message: "Error al obtener los productos del vendedor."};
+    }
+}
+
+export async function deleteProductAction(userId: string, productId: string) {
+    if (!userId || !productId) return { success: false, message: 'Faltan datos.'};
+    try {
+        const productRef = adminDb.collection('products').doc(productId);
+        const doc = await productRef.get();
+        if (!doc.exists) return { success: false, message: "El producto no existe." };
+        if (doc.data()?.sellerId !== userId) return { success: false, message: "No tienes permiso."};
+        
+        await productRef.delete();
+        
+        revalidatePath('/');
+        revalidatePath('/search');
+        revalidatePath('/my-products');
+        revalidatePath(`/product/${productId}`);
+        
+        return { success: true, message: "Producto borrado."};
+    } catch (error: any) {
+        console.error(`[Action] Error en deleteProductAction:`, error);
+        return { success: false, message: "Error en el servidor al borrar el producto."};
     }
 }
