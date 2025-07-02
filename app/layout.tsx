@@ -1,6 +1,3 @@
-// --- ARCHIVO ACTUALIZADO: app/layout.tsx ---
-// CAMBIO: Se actualiza el nombre de la marca a "Shark Market" en los metadatos.
-
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import "./globals.css";
@@ -20,7 +17,6 @@ const playfairDisplay = Playfair_Display({
   display: 'swap',
 });
 
-// ---> CORRECCIÓN: Actualizamos el título y la descripción con el nuevo nombre.
 export const metadata: Metadata = {
   title: 'Shark Market | Marketplace de Herramientas para Emprendedores',
   description: 'Compra y vende planes de negocio, modelos financieros y estrategias de alto impacto.',
@@ -46,7 +42,10 @@ export default function RootLayout({
         </main>
         <Footer />
         
-        <Toaster richColors position="top-right" duration={3000} />
+        {/* --- INICIO DE LA CORRECCIÓN --- */}
+        <Toaster richColors position="bottom-right" duration={2500} />
+        {/* --- FIN DE LA CORRECCIÓN --- */}
+        
       </body>
     </html>
   );
