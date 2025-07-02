@@ -17,24 +17,25 @@ const HeroSection = () => {
               Accede a sistemas de negocio y estrategias 100% validadas por líderes de la industria.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
+              {/* --- INICIO DE LA CORRECCIÓN --- */}
               <Link 
-                href="/productos" 
+                href="/search" // Corregido de /productos a /search
                 className="rounded-md bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-orange-600"
               >
-                Accede a las Herramientas
+                Explorar Herramientas
               </Link>
               <Link 
-                href="/vender" 
+                href="/upload" // Corregido de /vender a /upload
                 className="text-sm font-semibold leading-6 text-zinc-900 transition-colors hover:text-orange-600"
               >
                 Vende tu Know-How
               </Link>
+              {/* --- FIN DE LA CORRECCIÓN --- */}
             </div>
           </div>
-          {/* --- SECCIÓN DE LA IMAGEN CORREGIDA --- */}
           <div className="aspect-[3/2] w-full overflow-hidden rounded-xl">
             <Image
-              src="/images/opcion-3.jpg" // <-- ¡CAMBIA ESTA RUTA!
+              src="/images/opcion-3.jpg"
               alt="Modelos de negocio y planes financieros en Shark Market"
               width={1200}
               height={800}
