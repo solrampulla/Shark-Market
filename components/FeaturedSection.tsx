@@ -1,7 +1,7 @@
 'use client'; 
 import React from 'react';
 import { type Product } from '@/types'; 
-import ProductCard from '@/components/ProductCard'; // Asegúrate de que este componente exista
+import ProductCard from '@/components/ProductCard';
 
 interface FeaturedSectionProps {
   products: Product[]; 
@@ -10,8 +10,6 @@ interface FeaturedSectionProps {
 
 export default function FeaturedSection({ products, isLoading }: FeaturedSectionProps) {
   
-  // Si está cargando o no hay productos, no renderiza nada.
-  // Esto hace el componente más limpio y robusto.
   if (isLoading || !products || products.length === 0) {
     return null; 
   }
