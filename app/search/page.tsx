@@ -20,6 +20,8 @@ async function getProductsForSearch(searchParams: { [key: string]: string | stri
 
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
+    
+    // Usamos el filtro 'approved' que es esencial para los índices.
     query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") {
