@@ -1,4 +1,4 @@
-// app/actions/product.actions.ts - VERSIÓN DE PRUEBA FINAL
+// app/actions/product.actions.ts - VERSIÓN FINAL DE PRODUCCIÓN
 'use server';
 
 import * as admin from 'firebase-admin';
@@ -11,8 +11,8 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
 
-    // --- PRUEBA FINAL: Se comenta temporalmente el filtro 'approved' ---
-    // query = query.where('approved', '==', true);
+    // Reactivamos el filtro de 'approved' para producción
+    query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") query = query.where('category', '==', criteria.category);
     if (criteria.industry && criteria.industry !== "all") query = query.where('industry', '==', criteria.industry);
@@ -22,12 +22,13 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
         if (searchTerms.length > 0) query = query.where('searchableKeywords', 'array-contains-any', searchTerms);
     }
     
+    // Restauramos la lógica de ordenación final
     if (criteria.sortBy === 'price_asc') {
       query = query.orderBy('price', 'asc');
     } else if (criteria.sortBy === 'price_desc') {
       query = query.orderBy('price', 'desc');
     } else {
-      query = query.orderBy('createdAt', 'desc'); 
+      query = query.orderBy('createdAt', 'desc'); // <-- LÍNEA RESTAURADA
     }
     
     const snapshot = await query.limit(12).get();
@@ -88,12 +89,14 @@ export async function createProductAction(formData: FormData) {
     const sellerData = profileSnap.data();
     const sellerName = sellerData?.full_name || 'Vendedor Anónimo';
     const sellerUsername = sellerData?.username || null;
+    const sellerAvatarUrl = sellerData?.avatar_url || null; // <-- LÍNEA AÑADIDA
     const searchableKeywords = title.toLowerCase().split(' ').filter(word => word.length > 1);
     const newProductRef = adminDb.collection('products').doc();
     await newProductRef.set({
       title, description, price, currency: 'USD', category, type, industry,
       language: 'Español', previewImageURL, additionalFiles: processedFiles,
       sellerId: userId, sellerName: sellerName, sellerUsername: sellerUsername,
+      sellerAvatarUrl: sellerAvatarUrl, // <-- LÍNEA AÑADIDA
       createdAt: FieldValue.serverTimestamp(), tags: [], approved: true,
       searchableKeywords: searchableKeywords, reviewCount: 0, averageRating: 0,
     });
@@ -145,11 +148,13 @@ export async function createAssistedProductAction(formData: FormData) {
         const profileSnap = await profileRef.get();
         if (!profileSnap.exists) return { success: false, message: 'El perfil del vendedor no existe.' };
         const sellerData = profileSnap.data()!;
+        const sellerAvatarUrl = sellerData.avatar_url || null; // <-- LÍNEA AÑADIDA
         const finalProductData = {
             ...productData, currency: 'USD', previewImageURL,
             additionalFiles: processedAdditionalFiles, sellerId: userId,
             sellerName: sellerData.full_name || 'Anónimo',
             sellerUsername: sellerData.username || null,
+            sellerAvatarUrl: sellerAvatarUrl, // <-- LÍNEA AÑADIDA
             createdAt: FieldValue.serverTimestamp(), approved: true,
             searchableKeywords: productData.title.toLowerCase().split(' ').filter(word => word.length > 1),
             reviewCount: 0, averageRating: 0,
