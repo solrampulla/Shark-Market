@@ -1,8 +1,8 @@
-// --- ARCHIVO FINAL Y CORREGIDO ---
 import { notFound } from 'next/navigation';
 import { type Metadata, type ResolvingMetadata } from 'next';
 
-import { getSellerPublicProfileAction } from '@/app/actions/user.actions';
+// Asumo que estas son las acciones correctas, si no, ajusta las importaciones
+import { getSellerPublicProfileAction } from '@/app/actions/user.actions'; 
 import { type Product, type ProfileData } from '@/types';
 
 import ProfileHeader from '@/components/seller/ProfileHeader';
@@ -23,7 +23,7 @@ export async function generateMetadata(
   
   if (!result.success || !result.profile) {
     return {
-      title: 'Perfil no encontrado | Shark Market', // Cambiado a Shark Market
+      title: 'Perfil no encontrado | Shark Market',
     }
   }
   
@@ -60,19 +60,20 @@ export default async function SellerPage({ params }: SellerPageProps) {
         <ProfileHeader profile={profile} />
 
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-slate-700 mb-6">Productos de {profile.full_name || 'este vendedor'}</h2>
+          <h2 className="text-2xl font-bold text-slate-700 mb-6">Activos de {profile.full_name || 'este vendedor'}</h2>
           
           {products.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => (
-                // --- INICIO DE LA CORRECCIÓN FINAL ---
-                // Se actualiza la llamada a ProductCard para que coincida con su definición.
+            // Se añade 'items-stretch' para la alineación
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
+              {/* --- INICIO DE LA CORRECCIÓN --- */}
+              {products.map((product, index) => (
                 <ProductCard
                   key={product.id!}
                   product={product}
+                  index={index} // Se añade el 'index' que faltaba
                 />
-                // --- FIN DE LA CORRECCIÓN FINAL ---
               ))}
+              {/* --- FIN DE LA CORRECCIÓN --- */}
             </div>
           ) : (
             <div className="text-center py-12 px-6 bg-white rounded-lg border border-slate-200">
