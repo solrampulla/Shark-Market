@@ -9,7 +9,9 @@ import { Product, ProductFile, FilterCriteria } from '@/types';
 export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
-    query = query.where('approved', '==', true);
+
+    // --- PRUEBA FINAL: Se comenta el filtro 'approved' para aislar el problema ---
+    // query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") {
       query = query.where('category', '==', criteria.category);
@@ -225,10 +227,8 @@ export async function getProductDetailsForDisplayAction(productId: string): Prom
         const plainProduct: Product = {
             id: productSnap.id,
             ...productData,
-            // --- INICIO DE LA CORRECCIÓN ---
             createdAt: (productData.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
             updatedAt: (productData.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
-            // --- FIN DE LA CORRECCIÓN ---
         } as Product;
         return { success: true, product: plainProduct };
     } catch (error: any) {
