@@ -1,4 +1,3 @@
-// app/actions/product.actions.ts - VERSIÓN FINAL DE PRODUCCIÓN
 'use server';
 
 import * as admin from 'firebase-admin';
@@ -10,25 +9,23 @@ import { Product, ProductFile, FilterCriteria } from '@/types';
 export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
-
-    // Reactivamos el filtro de 'approved' para producción
     query = query.where('approved', '==', true);
 
-    if (criteria.category && criteria.category !== "all") query = query.where('category', '==', criteria.category);
-    if (criteria.industry && criteria.industry !== "all") query = query.where('industry', '==', criteria.industry);
-    if (criteria.type && criteria.type !== "all") query = query.where('type', '==', criteria.type);
+    if (criteria.category && criteria.category !== "all") {
+      query = query.where('category', '==', criteria.category);
+    }
+    
     if (criteria.q) {
         const searchTerms = criteria.q.toLowerCase().split(' ').filter(term => term.length > 1);
         if (searchTerms.length > 0) query = query.where('searchableKeywords', 'array-contains-any', searchTerms);
     }
     
-    // Restauramos la lógica de ordenación final
     if (criteria.sortBy === 'price_asc') {
       query = query.orderBy('price', 'asc');
     } else if (criteria.sortBy === 'price_desc') {
       query = query.orderBy('price', 'desc');
     } else {
-      query = query.orderBy('createdAt', 'desc'); // <-- LÍNEA RESTAURADA
+      query = query.orderBy('createdAt', 'desc'); 
     }
     
     const snapshot = await query.limit(12).get();
@@ -60,13 +57,13 @@ export async function createProductAction(formData: FormData) {
     const description = formData.get('description') as string;
     const category = formData.get('category') as string;
     const price = Number(formData.get('price'));
-    const type = formData.get('type') as string;
-    const industry = formData.get('industry') as string;
     const previewImage = formData.get('previewImage') as File | null;
     const additionalFiles = formData.getAll('files') as File[];
-    if (!title || !description || !category || !type || !industry || isNaN(price) || additionalFiles.length === 0 || !previewImage) {
+
+    if (!title || !description || !category || isNaN(price) || additionalFiles.length === 0 || !previewImage) {
       return { success: false, message: "Por favor, completa todos los campos y sube los archivos necesarios." };
     }
+
     const bucket = adminStorage.bucket();
     const uploadAndGetPublicUrl = async (file: File, folder: string): Promise<string> => {
         const filePath = `${folder}/${userId}/${Date.now()}-${file.name}`;
@@ -76,6 +73,7 @@ export async function createProductAction(formData: FormData) {
         await fileRef.makePublic();
         return fileRef.publicUrl();
     };
+
     const previewImageURL = await uploadAndGetPublicUrl(previewImage, 'product-previews');
     const processedFiles: ProductFile[] = await Promise.all(
       additionalFiles.map(async (file) => {
@@ -83,23 +81,28 @@ export async function createProductAction(formData: FormData) {
         return { name: file.name, url: url, size: file.size, type: file.type };
       })
     );
+
     const profileRef = adminDb.collection('profiles').doc(userId);
     const profileSnap = await profileRef.get();
     if (!profileSnap.exists) return { success: false, message: 'El perfil del vendedor no existe.' };
+
     const sellerData = profileSnap.data();
     const sellerName = sellerData?.full_name || 'Vendedor Anónimo';
     const sellerUsername = sellerData?.username || null;
-    const sellerAvatarUrl = sellerData?.avatar_url || null; // <-- LÍNEA AÑADIDA
+    const sellerAvatarUrl = sellerData?.avatar_url || null;
     const searchableKeywords = title.toLowerCase().split(' ').filter(word => word.length > 1);
+    
     const newProductRef = adminDb.collection('products').doc();
+    
     await newProductRef.set({
-      title, description, price, currency: 'USD', category, type, industry,
+      title, description, price, currency: 'USD', category,
       language: 'Español', previewImageURL, additionalFiles: processedFiles,
       sellerId: userId, sellerName: sellerName, sellerUsername: sellerUsername,
-      sellerAvatarUrl: sellerAvatarUrl, // <-- LÍNEA AÑADIDA
+      sellerAvatarUrl: sellerAvatarUrl,
       createdAt: FieldValue.serverTimestamp(), tags: [], approved: true,
       searchableKeywords: searchableKeywords, reviewCount: 0, averageRating: 0,
     });
+
     revalidatePath('/');
     revalidatePath('/my-products');
     revalidatePath('/search');
@@ -119,18 +122,18 @@ export async function createAssistedProductAction(formData: FormData) {
         if (!previewImage) {
             return { success: false, message: "Debes subir una imagen de portada." };
         }
+        
         const productData = {
             title: formData.get('title') as string,
             description: formData.get('description') as string,
             price: Number(formData.get('price')),
             category: formData.get('category') as string,
-            type: formData.get('type') as string,
-            industry: formData.get('industry') as string,
             language: 'Español',
             executiveSummary: formData.get('executiveSummary') as string,
             marketAnalysis: JSON.parse(formData.get('marketAnalysis') as string),
             financials: JSON.parse(formData.get('financials') as string),
         };
+
         const bucket = adminStorage.bucket();
         const uploadFile = async (file: File, folder: string): Promise<ProductFile> => {
             const filePath = `${folder}/${userId}/${Date.now()}-${file.name}`;
@@ -140,25 +143,29 @@ export async function createAssistedProductAction(formData: FormData) {
             await fileRef.makePublic();
             return { name: file.name, url: fileRef.publicUrl(), size: file.size, type: file.type };
         };
+
         const previewImageURL = (await uploadFile(previewImage, 'product-previews')).url;
         const processedAdditionalFiles: ProductFile[] = await Promise.all(
             additionalFiles.map(file => uploadFile(file, 'product-files'))
         );
+
         const profileRef = adminDb.collection('profiles').doc(userId);
         const profileSnap = await profileRef.get();
         if (!profileSnap.exists) return { success: false, message: 'El perfil del vendedor no existe.' };
+        
         const sellerData = profileSnap.data()!;
-        const sellerAvatarUrl = sellerData.avatar_url || null; // <-- LÍNEA AÑADIDA
+        const sellerAvatarUrl = sellerData.avatar_url || null;
         const finalProductData = {
             ...productData, currency: 'USD', previewImageURL,
             additionalFiles: processedAdditionalFiles, sellerId: userId,
             sellerName: sellerData.full_name || 'Anónimo',
             sellerUsername: sellerData.username || null,
-            sellerAvatarUrl: sellerAvatarUrl, // <-- LÍNEA AÑADIDA
+            sellerAvatarUrl: sellerAvatarUrl,
             createdAt: FieldValue.serverTimestamp(), approved: true,
             searchableKeywords: productData.title.toLowerCase().split(' ').filter(word => word.length > 1),
             reviewCount: 0, averageRating: 0,
         };
+
         const newProductRef = adminDb.collection('products').doc();
         await newProductRef.set(finalProductData);
         revalidatePath('/');
@@ -218,8 +225,10 @@ export async function getProductDetailsForDisplayAction(productId: string): Prom
         const plainProduct: Product = {
             id: productSnap.id,
             ...productData,
+            // --- INICIO DE LA CORRECCIÓN ---
             createdAt: (productData.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
             updatedAt: (productData.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
+            // --- FIN DE LA CORRECCIÓN ---
         } as Product;
         return { success: true, product: plainProduct };
     } catch (error: any) {

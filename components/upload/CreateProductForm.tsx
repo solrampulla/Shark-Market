@@ -1,4 +1,4 @@
-// --- ARCHIVO FINAL Y 100% CORREGIDO ---
+// components/upload/CreateProductForm.tsx - VERSIÓN FINAL CON NUEVAS CATEGORÍAS
 'use client';
 
 import React, { useState, type FormEvent } from 'react';
@@ -7,7 +7,10 @@ import { toast } from 'sonner';
 import { type User } from 'firebase/auth';
 
 import { createProductAction } from '@/app/actions/product.actions';
-import { CATEGORIES, INDUSTRIES, PRODUCT_TYPES } from '@/lib/constants';
+// --- INICIO DE LA CORRECCIÓN ---
+// Importamos la nueva lista de categorías y eliminamos las antiguas
+import { SHARK_MARKET_CATEGORIES } from '@/lib/product-categories';
+// --- FIN DE LA CORRECCIÓN ---
 
 import FileUploadZone from './FileUploadZone';
 import FilePreview from './FilePreview';
@@ -19,12 +22,11 @@ interface CreateProductFormProps {
 export default function CreateProductForm({ currentUser }: CreateProductFormProps) {
     const router = useRouter();
     
+    // Simplificamos el estado del formulario
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        category: CATEGORIES[0]?.value || '',
-        type: PRODUCT_TYPES[0]?.value || '',
-        industry: INDUSTRIES[0]?.value || '',
+        category: SHARK_MARKET_CATEGORIES[0]?.value || '', // Valor por defecto
         price: '',
     });
     
@@ -72,6 +74,7 @@ export default function CreateProductForm({ currentUser }: CreateProductFormProp
         const dataToSend = new FormData();
         dataToSend.append('userId', currentUser.uid);
         
+        // El formulario ahora es más simple, así que se añaden menos campos
         Object.entries(formData).forEach(([key, value]) => {
             dataToSend.append(key, value);
         });
@@ -117,41 +120,29 @@ export default function CreateProductForm({ currentUser }: CreateProductFormProp
                 <label htmlFor="price" className={labelStyle}>Precio (USD)</label>
                 <input type="number" name="price" id="price" value={formData.price} onChange={handleInputChange} required className={inputStyle} placeholder="Ej: 29.99" step="0.01" min="0" />
             </div>
+            {/* --- INICIO DE LA CORRECCIÓN --- */}
+            {/* Este es ahora el único menú desplegable para la categorización */}
             <div>
                 <label htmlFor="category" className={labelStyle}>Categoría</label>
                 <select name="category" id="category" value={formData.category} onChange={handleInputChange} className={inputStyle}>
-                    {CATEGORIES.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
+                    {SHARK_MARKET_CATEGORIES.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
                 </select>
             </div>
-            <div>
-                <label htmlFor="type" className={labelStyle}>Tipo de Producto</label>
-                <select name="type" id="type" value={formData.type} onChange={handleInputChange} className={inputStyle}>
-                    {PRODUCT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-            </div>
-            <div>
-                <label htmlFor="industry" className={labelStyle}>Industria</label>
-                <select name="industry" id="industry" value={formData.industry} onChange={handleInputChange} className={inputStyle}>
-                    {INDUSTRIES.map(ind => <option key={ind.value} value={ind.value}>{ind.label}</option>)}
-                </select>
-            </div>
+            {/* Se eliminan los campos 'type' e 'industry' */}
+            {/* --- FIN DE LA CORRECCIÓN --- */}
         </div>
         
         <div>
           <label className={labelStyle}>Imagen de Portada</label>
-          {/* CORRECCIÓN: Usamos 'onFileChange' y 'singleFile' */}
           <FileUploadZone onFileChange={handlePreviewImageChange} singleFile={true} />
-          {/* CORRECCIÓN: Pasamos el objeto File completo */}
           {previewImage && <FilePreview file={previewImage} onRemove={removePreviewImage} />}
         </div>
         
         <div>
             <label className={labelStyle}>Archivos del Producto (lo que el cliente descargará)</label>
-            {/* CORRECCIÓN: Usamos 'onFileChange' */}
             <FileUploadZone onFileChange={handleProductFilesChange} />
             <div className="mt-4 space-y-2">
                 {productFiles.map((file, index) => (
-                    // El componente FilePreview ya se usaba correctamente aquí
                     <FilePreview key={index} file={file} onRemove={() => removeProductFile(file)} />
                 ))}
             </div>
