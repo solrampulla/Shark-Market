@@ -22,11 +22,18 @@ export default function FeaturedSection({ products, isLoading }: FeaturedSection
             Herramientas Destacadas
           </h2>
         </div>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        {/* --- INICIO DE LA CORRECCIÓN --- */}
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
+          {/* Se añade el 'index' en el map para pasarlo a cada tarjeta */}
           {products.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              index={index} 
+            />
           ))}
         </div>
+        {/* --- FIN DE LA CORRECCIÓN --- */}
       </div>
     </section>
   );
