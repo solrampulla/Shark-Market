@@ -1,44 +1,76 @@
-// --- ARCHIVO FINAL Y CORREGIDO ---
-
 import type { Metadata } from 'next';
-import { Suspense } from 'react'; // Importamos Suspense
+import { Suspense } from 'react';
 import SearchPageClient from './SearchPageClient';
 
-// Los metadatos ahora pueden vivir aquí sin problemas.
+// --- Lógica de datos movida aquí ---
+import { adminDb } from '@/lib/firebaseAdmin';
+import { type Product, type FilterCriteria } from '@/types';
+import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
+import * as admin from 'firebase-admin';
+
 export const metadata: Metadata = {
   title: 'Explorar Productos | Shark Market',
   description: 'Busca y filtra entre cientos de plantillas y herramientas de negocio creadas por expertos.',
 };
 
-// Un componente simple para mostrar mientras carga el contenido principal.
-// Mejora la experiencia de usuario.
-function SearchPageSkeleton() {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="animate-pulse">
-        <div className="h-10 bg-slate-200 rounded w-1/3 mb-4"></div>
-        <div className="h-6 bg-slate-200 rounded w-2/3 mb-10"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="border border-slate-200 rounded-lg p-4">
-              <div className="w-full h-40 bg-slate-200 rounded mb-4"></div>
-              <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+async function getProductsForSearch(searchParams: { [key: string]: string | string[] | undefined }) {
+  const criteria: FilterCriteria = {
+    q: typeof searchParams.q === 'string' ? searchParams.q : undefined,
+    category: typeof searchParams.category === 'string' ? searchParams.category : 'all',
+    sortBy: typeof searchParams.sortBy === 'string' ? searchParams.sortBy : 'newest',
+  };
+
+  try {
+    let query: admin.firestore.Query = adminDb.collection('products');
+    query = query.where('approved', '==', true);
+
+    if (criteria.category && criteria.category !== "all") {
+      query = query.where('category', '==', criteria.category);
+    }
+    
+    if (criteria.q) {
+        const searchTerms = criteria.q.toLowerCase().split(' ').filter(term => term.length > 1);
+        if (searchTerms.length > 0) query = query.where('searchableKeywords', 'array-contains-any', searchTerms);
+    }
+    
+    if (criteria.sortBy === 'price_asc') {
+      query = query.orderBy('price', 'asc');
+    } else if (criteria.sortBy === 'price_desc') {
+      query = query.orderBy('price', 'desc');
+    } else {
+      query = query.orderBy('createdAt', 'desc'); 
+    }
+    
+    const snapshot = await query.limit(24).get();
+    if (snapshot.empty) return [];
+    
+    const products = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
+        const data = doc.data();
+        return {
+            id: doc.id, ...data,
+            createdAt: (data.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
+            updatedAt: (data.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
+        } as Product;
+    });
+    return products;
+  } catch (error) {
+    console.error("Error fetching products for search page:", error);
+    return []; // Devuelve vacío en caso de error para no romper la página.
+  }
 }
 
-
-// La página ahora es un Server Component limpio que usa Suspense.
-export default function SearchPage() {
+// La página ahora es un Server Component que obtiene los datos
+export default async function SearchPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const initialProducts = await getProductsForSearch(searchParams);
+  
   return (
     <div className="bg-slate-50 min-h-screen">
-      <Suspense fallback={<SearchPageSkeleton />}>
-        <SearchPageClient />
+      {/* Usamos una key en el cliente para forzar el re-renderizado cuando cambia la URL */}
+      <Suspense fallback={<div className="text-center p-10">Cargando...</div>}>
+        <SearchPageClient 
+          initialProducts={initialProducts} 
+          key={JSON.stringify(searchParams)} 
+        />
       </Suspense>
     </div>
   );
