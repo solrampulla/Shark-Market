@@ -10,8 +10,8 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
 
-    // --- PRUEBA FINAL: Se comenta el filtro 'approved' para aislar el problema ---
-    // query = query.where('approved', '==', true);
+    // Se mantiene el filtro 'approved' ya que es esencial para los índices.
+    query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") {
       query = query.where('category', '==', criteria.category);
@@ -27,6 +27,7 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
     } else if (criteria.sortBy === 'price_desc') {
       query = query.orderBy('price', 'desc');
     } else {
+      // Se mantiene la ordenación por fecha, que es la correcta.
       query = query.orderBy('createdAt', 'desc'); 
     }
     
