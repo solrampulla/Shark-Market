@@ -1,3 +1,4 @@
+// app/actions/product.actions.ts - VERSIÓN DE PRUEBA FINAL
 'use server';
 
 import * as admin from 'firebase-admin';
@@ -10,9 +11,8 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
 
-    // --- LÍNEA REACTIVADA PARA PRODUCCIÓN ---
-    // Asegura que solo productos aprobados se muestren en búsquedas y listados públicos
-    query = query.where('approved', '==', true);
+    // --- PRUEBA FINAL: Se comenta temporalmente el filtro 'approved' ---
+    // query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") query = query.where('category', '==', criteria.category);
     if (criteria.industry && criteria.industry !== "all") query = query.where('industry', '==', criteria.industry);
@@ -22,13 +22,11 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
         if (searchTerms.length > 0) query = query.where('searchableKeywords', 'array-contains-any', searchTerms);
     }
     
-    // --- LÓGICA DE ORDENACIÓN RESTAURADA Y COMPLETA ---
     if (criteria.sortBy === 'price_asc') {
       query = query.orderBy('price', 'asc');
     } else if (criteria.sortBy === 'price_desc') {
       query = query.orderBy('price', 'desc');
     } else {
-      // Por defecto (sortBy: 'newest'), ordenamos por fecha de creación.
       query = query.orderBy('createdAt', 'desc'); 
     }
     
