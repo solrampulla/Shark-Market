@@ -13,11 +13,9 @@ const NoResults = () => (
     </div>
 );
 
-// El componente ahora recibe los productos iniciales como prop
 export default function SearchPageClient({ initialProducts }: { initialProducts: Product[] }) {
     const searchParams = useSearchParams();
     
-    // Los filtros iniciales se leen de la URL para que la FilterBar se muestre correctamente
     const initialFilters = {
         q: searchParams.get('q') || '',
         category: searchParams.get('category') || 'all',
@@ -26,7 +24,6 @@ export default function SearchPageClient({ initialProducts }: { initialProducts:
 
     return (
         <>
-            {/* FilterBar ya actualiza la URL por sí misma, lo que desencadena la nueva carga de datos */}
             <FilterBar initialFilters={initialFilters} onFiltersUpdate={() => {}} />
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-6">

@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import SearchPageClient from './SearchPageClient';
-
-// --- Lógica de datos movida aquí ---
 import { adminDb } from '@/lib/firebaseAdmin';
 import { type Product, type FilterCriteria } from '@/types';
 import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
@@ -55,17 +53,15 @@ async function getProductsForSearch(searchParams: { [key: string]: string | stri
     return products;
   } catch (error) {
     console.error("Error fetching products for search page:", error);
-    return []; // Devuelve vacío en caso de error para no romper la página.
+    return [];
   }
 }
 
-// La página ahora es un Server Component que obtiene los datos
 export default async function SearchPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const initialProducts = await getProductsForSearch(searchParams);
   
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* Usamos una key en el cliente para forzar el re-renderizado cuando cambia la URL */}
       <Suspense fallback={<div className="text-center p-10">Cargando...</div>}>
         <SearchPageClient 
           initialProducts={initialProducts} 
