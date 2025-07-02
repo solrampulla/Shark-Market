@@ -1,4 +1,3 @@
-// --- ARCHIVO FINAL Y CORREGIDO: components/products/ProductList.tsx ---
 'use client';
 
 import { type Product } from '@/types';
@@ -10,17 +9,18 @@ interface ProductListProps {
 
 export default function ProductList({ products }: ProductListProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {products.map((product) => (
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Se reemplaza la larga lista de propiedades incorrectas
-        // por la única propiedad que el componente necesita: 'product'.
+    // --- INICIO DE LA CORRECCIÓN ---
+    // Se añade 'items-stretch' para asegurar que todas las tarjetas en una fila tengan la misma altura
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
+      {/* Se pasa el 'index' a cada ProductCard para la animación */}
+      {products.map((product, index) => (
         <ProductCard
           key={product.id!}
           product={product}
+          index={index}
         />
-        // --- FIN DE LA CORRECCIÓN ---
       ))}
     </div>
+    // --- FIN DE LA CORRECCIÓN ---
   );
 }

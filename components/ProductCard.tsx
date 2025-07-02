@@ -7,16 +7,14 @@ import { WishlistButton } from './products/WishlistButton';
 import { type Product } from '@/types';
 import RatingStars from './RatingStars';
 
-// --- INICIO DE LA CORRECCIÓN ---
-// Se vuelve a añadir la interfaz que acepta props opcionales
 interface ProductCardProps {
   product: Product;
+  index: number; // <-- NUEVA PROPIEDAD para el retraso de la animación
   editUrl?: string;
   onDelete?: (productId: string, title: string) => void;
 }
-// --- FIN DE LA CORRECCIÓN ---
 
-export default function ProductCard({ product, editUrl, onDelete }: ProductCardProps) {
+export default function ProductCard({ product, index, editUrl, onDelete }: ProductCardProps) {
   
   const displayPrice = typeof product.price === 'number' ? product.price.toFixed(2) : '0.00';
   const displayTitle = product.title || "Activo sin título";
@@ -30,9 +28,10 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
   };
 
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1">
-      
-      {/* --- SECCIÓN DE IMAGEN Y WISHLIST --- */}
+    <div 
+      className="group animate-fadeInUp relative flex h-full flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1"
+      style={{ animationDelay: `${index * 100}ms`, willChange: 'transform, opacity' }}
+    >
       <div className="relative aspect-video w-full">
         <WishlistButton productId={product.id!} initialIsWishlisted={product.isWishlisted || false} />
         <Link href={detailUrl} className="block h-full w-full">
@@ -54,7 +53,6 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         </Link>
       </div>
       
-      {/* --- SECCIÓN DE CONTENIDO PRINCIPAL --- */}
       <div className="flex flex-1 flex-col p-4">
         <Link href={detailUrl} className="flex-grow">
           <p className="text-xs font-semibold uppercase tracking-wider text-orange-600">{displayCategory}</p>
@@ -73,11 +71,10 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
           </div>
         </Link>
         
-        {/* --- FOOTER: Vendedor y Precio --- */}
         <div className="mt-auto flex items-center justify-between border-t border-zinc-100 pt-3">
           <div className="flex items-center gap-2">
             <Image
-              src={product.sellerAvatarUrl || '/default-avatar.png'}
+              src={product.sellerAvatarUrl || '/images/default-avatar.png'}
               alt={`Avatar de ${product.sellerName || 'Vendedor'}`}
               width={24}
               height={24}
@@ -91,8 +88,6 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
         </div>
       </div>
 
-      {/* --- INICIO DE LA CORRECCIÓN --- */}
-      {/* Vuelve a añadir la sección de botones, que solo aparece si se pasan las props */}
       {(editUrl || onDelete) && (
         <div className="flex items-center justify-end space-x-2 border-t border-zinc-200 bg-zinc-50 px-4 py-2">
           {editUrl && (
@@ -107,8 +102,6 @@ export default function ProductCard({ product, editUrl, onDelete }: ProductCardP
           )}
         </div>
       )}
-      {/* --- FIN DE LA CORRECCIÓN --- */}
-
     </div>
   );
 }

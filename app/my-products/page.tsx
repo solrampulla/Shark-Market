@@ -65,9 +65,7 @@ export default function MyProductsPage() {
         if (!currentUser) return toast.error("Debes estar autenticado.");
         toast.warning(`¿Seguro que quieres borrar "${productTitle}"?`, {
             action: { label: 'Confirmar Borrado', onClick: () => executeDeletion(productId) },
-            // --- INICIO DE LA CORRECCIÓN ---
-            cancel: { label: 'Cancelar', onClick: () => {} }, // Se añade un onClick vacío
-            // --- FIN DE LA CORRECCIÓN ---
+            cancel: { label: 'Cancelar', onClick: () => {} },
             duration: 10000,
         });
     };
@@ -108,10 +106,11 @@ export default function MyProductsPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
-                        {products.map(product => (
+                        {products.map((product, index) => (
                             <ProductCard
                                 key={product.id!}
                                 product={product}
+                                index={index}
                                 editUrl={`/my-products/edit/${product.id}`}
                                 onDelete={() => handleDeleteProduct(product.id!, product.title)}
                             />
