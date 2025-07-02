@@ -1,281 +1,121 @@
-// --- NUEVO ARCHIVO: app/product/[productid]/ProductDetailClient.tsx ---
-
 'use client';
 
-
-
 import React from 'react';
-
 import Image from 'next/image';
-
 import Link from 'next/link';
-
 import { type Product, type Review } from '@/types';
-
 import { BuyNowButton } from '@/components/BuyNowButton';
-
 import RatingStars from '@/components/RatingStars';
-
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
-
-import { Briefcase, Target, Zap } from 'lucide-react';
-
-
+import { Briefcase, Target, Zap, CheckCircle } from 'lucide-react';
 
 interface ProductDetailClientProps {
-
-    product: Product;
-
-    initialReviews: Review[];
-
+    product: Product;
+    initialReviews: Review[];
 }
-
-
-
-// Función helper para los cálculos financieros
-
-function calculateFinancials(financials: Product['financials']) {
-
-    if (!financials || typeof financials.initial_investment !== 'number' || typeof financials.monthly_revenue !== 'number') return null;
-
-    const { initial_investment, monthly_revenue, fixed_costs_monthly, variable_cost_per_unit } = financials;
-
-    if (initial_investment <= 0) return { breakevenMonths: 'N/A', roi: 'N/A' };
-
-    const monthly_gross_profit = monthly_revenue * (1 - ((variable_cost_per_unit || 0) / 100));
-
-    const monthly_net_profit = monthly_gross_profit - (fixed_costs_monthly || 0);
-
-    if (monthly_net_profit <= 0) return { breakevenMonths: 'No rentable', roi: -100 };
-
-    const breakevenMonths = initial_investment / monthly_net_profit;
-
-    const annual_net_profit = monthly_net_profit * 12;
-
-    const roi = (annual_net_profit / initial_investment) * 100;
-
-    return {
-
-        breakevenMonths: breakevenMonths.toFixed(1),
-
-        roi: roi.toFixed(1)
-
-    };
-
-}
-
-
 
 export default function ProductDetailClient({ product, initialReviews }: ProductDetailClientProps) {
 
-    const financialMetrics = calculateFinancials(product.financials);
-
-    const marketAnalysis = product.marketAnalysis;
-
-
-
-    return (
-
-        <div className="bg-slate-50">
-
-            <div className="container mx-auto px-4 py-8 sm:py-12">
-
-                <nav aria-label="Breadcrumb" className="mb-8 text-sm">
-
-                    <ol className="flex items-center space-x-2 text-slate-500">
-
-                        <li><Link href="/" className="hover:underline hover:text-accent">Inicio</Link></li>
-
-                        <li><span className="mx-2">/</span></li>
-
-                        <li><Link href={`/search?category=${encodeURIComponent(product.category)}`} className="hover:underline hover:text-accent">{product.category}</Link></li>
-
-                        <li><span className="mx-2">/</span></li>
-
-                        <li className="font-semibold text-slate-700" aria-current="page">{product.title}</li>
-
-                    </ol>
-
-                </nav>
-
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-
-                    <div className="lg:col-span-3 space-y-8">
-
-                        <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-slate-200 bg-white">
-
-                            {product.previewImageURL ? (
-
-                                <Image src={product.previewImageURL} alt={`Imagen de ${product.title}`} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 60vw" />
-
-                            ) : (
-
-                                <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-
-                                    <span className="text-sm text-slate-400">Imagen no disponible</span>
-
-                                </div>
-
-                            )}
-
-                        </div>
-
-                        {product.executiveSummary && (
-
-                            <div className="bg-white border border-slate-200 rounded-lg p-6">
-
-                                <h2 className="font-serif text-2xl font-bold text-slate-800">Resumen Ejecutivo</h2>
-
-                                <div className="prose prose-slate max-w-none mt-4 text-slate-600">
-
-                                    <p className="whitespace-pre-wrap">{product.executiveSummary}</p>
-
-                                </div>
-
-                            </div>
-
-                        )}
-
-                        {financialMetrics && (
-
-                            <div className="bg-white border border-slate-200 rounded-lg p-6">
-
-                                <h3 className="font-serif text-2xl font-bold text-slate-800">Indicadores Clave</h3>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-
-                                    <div className="bg-green-50 p-4 rounded-lg text-center">
-
-                                        <p className="text-sm text-green-700 font-semibold">Punto de Equilibrio</p>
-
-                                        <p className="text-3xl font-bold text-green-900">{financialMetrics.breakevenMonths} <span className="text-lg font-medium">meses</span></p>
-
-                                    </div>
-
-                                    <div className="bg-blue-50 p-4 rounded-lg text-center">
-
-                                        <p className="text-sm text-blue-700 font-semibold">ROI (Primer Año)</p>
-
-                                        <p className="text-3xl font-bold text-blue-900">{financialMetrics.roi}%</p>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        )}
-
-                        <div className="bg-white border border-slate-200 rounded-lg p-6">
-
-                            <h2 className="font-serif text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2">Descripción Detallada</h2>
-
-                            <div className="prose prose-slate max-w-none mt-4 text-slate-600">
-
-                                <p className="whitespace-pre-wrap">{product.description || "No hay descripción disponible."}</p>
-
-                            </div>
-
-                        </div>
-
-                        {marketAnalysis && (
-
-                            <div className="bg-white border border-slate-200 rounded-lg p-6">
-
-                                <h3 className="font-serif text-2xl font-bold text-slate-800">Análisis Estratégico</h3>
-
-                                <div className="mt-4 space-y-4">
-
-                                    <div className="flex items-start gap-3"><Briefcase className="w-5 h-5 text-accent flex-shrink-0 mt-1" /><div><h4 className="font-semibold text-slate-700">Mercado</h4><p className="text-sm text-slate-600">Implementado en {marketAnalysis.location_country} con un tamaño estimado de {Number(marketAnalysis.market_size).toLocaleString('es-ES')}€.</p></div></div>
-
-                                    <div className="flex items-start gap-3"><Target className="w-5 h-5 text-accent flex-shrink-0 mt-1" /><div><h4 className="font-semibold text-slate-700">Cliente Ideal</h4><p className="text-sm text-slate-600">{marketAnalysis.customer_profile_summary}</p></div></div>
-
-                                    <div className="flex items-start gap-3"><Zap className="w-5 h-5 text-accent flex-shrink-0 mt-1" /><div><h4 className="font-semibold text-slate-700">Fortalezas</h4><p className="text-sm text-slate-600">{marketAnalysis.strengths || 'No especificado'}</p></div></div>
-
-                                </div>
-
-                            </div>
-
-                        )}
-
-                        <div id="reviews-section" className="bg-white border border-slate-200 rounded-lg">
-
-                            <ReviewsSection productId={product.id!} initialReviews={initialReviews} />
-
-                        </div>
-
-                    </div>
-
-                    <div className="lg:col-span-2">
-
-                        <div className="sticky top-24">
-
-                            <h1 className="font-serif text-4xl lg:text-5xl font-bold text-slate-800 leading-tight">{product.title}</h1>
-
-                            <div className="mt-2 text-sm text-slate-600">
-
-                                {product.sellerName && (
-
-                                    product.sellerUsername ? (
-
-                                        <Link href={`/seller/${product.sellerUsername}`} className="hover:underline">
-
-                                            Vendido por <span className="font-semibold text-accent">{product.sellerName}</span>
-
-                                        </Link>
-
-                                    ) : (
-
-                                        <span>Vendido por <span className="font-semibold text-accent">{product.sellerName}</span></span>
-
-                                    )
-
-                                )}
-
-                            </div>
-
-                            <div className="mt-4 flex items-center">
-
-                                <RatingStars rating={product.averageRating || 0} />
-
-                                <a href="#reviews-section" className="ml-3 text-sm font-medium text-accent hover:text-accent-hover">
-
-                                ({product.reviewCount || 0} reseñas)
-
-                                </a>
-
-                            </div>
-
-                            <div className="mt-8 bg-white border border-slate-200 rounded-lg p-6 space-y-6">
-
-                                <div>
-
-                                    <p className="text-sm text-slate-600">Precio</p>
-
-                                    <p className="text-4xl font-bold text-slate-800 mt-1">
-
-                                        ${product.price.toFixed(2)} <span className="text-base font-medium text-slate-500">{product.currency}</span>
-
-                                    </p>
-
-                                </div>
-
-                                <BuyNowButton productId={product.id!} price={product.price} productName={product.title} productDescription={product.description || ''} currency={product.currency} />
-
-                                <p className="text-xs text-center text-slate-500">Pago seguro y encriptado con Stripe.</p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    );
-
+    return (
+        <div className="bg-white">
+            <div className="container mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+                {/* Breadcrumbs */}
+                <nav aria-label="Breadcrumb" className="mb-6 text-sm">
+                    <ol className="flex items-center space-x-2 text-slate-500">
+                        <li><Link href="/" className="hover:text-orange-600">Inicio</Link></li>
+                        <li><span className="mx-1">/</span></li>
+                        <li><Link href={`/search?category=${product.category}`} className="hover:text-orange-600 capitalize">{product.category.replace(/_/g, ' ')}</Link></li>
+                    </ol>
+                </nav>
+
+                <div className="grid grid-cols-1 gap-12 lg:grid-cols-7">
+                    {/* --- Columna Izquierda: Contenido Principal --- */}
+                    <div className="lg:col-span-4">
+                        <div className="space-y-12">
+                            {/* Título para móviles */}
+                            <div className="lg:hidden">
+                                <h1 className="font-serif text-3xl font-bold tracking-tight text-zinc-900">{product.title}</h1>
+                                {/* Info del vendedor para móviles */}
+                                <SellerInfo product={product} className="mt-2" />
+                            </div>
+
+                            {/* Imagen Principal */}
+                            <div className="relative aspect-video w-full overflow-hidden rounded-xl border bg-slate-50">
+                                {product.previewImageURL ? (
+                                    <Image src={product.previewImageURL} alt={`Imagen de ${product.title}`} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 60vw" />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center"><span className="text-sm text-slate-400">Imagen no disponible</span></div>
+                                )}
+                            </div>
+
+                            {/* Descripción Detallada */}
+                            <div>
+                                <h2 className="font-serif text-2xl font-bold text-zinc-800">Sobre esta Herramienta</h2>
+                                <div className="prose prose-slate mt-4 max-w-none text-slate-600 whitespace-pre-wrap">
+                                    {product.description || "No hay descripción disponible."}
+                                </div>
+                            </div>
+                            
+                            {/* Separador Visual */}
+                            <hr className="border-slate-200" />
+                            
+                            {/* Sección de Reseñas */}
+                            <div id="reviews-section">
+                                <ReviewsSection productId={product.id!} initialReviews={initialReviews} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* --- Columna Derecha: Barra de Compra (Sticky) --- */}
+                    <div className="lg:col-span-3">
+                        <div className="sticky top-24 space-y-6">
+                            {/* Título para escritorio */}
+                            <div className="hidden lg:block">
+                                <h1 className="font-serif text-4xl font-bold tracking-tight text-zinc-900 leading-tight">{product.title}</h1>
+                                <SellerInfo product={product} className="mt-3" />
+                            </div>
+
+                            {/* Caja de Compra */}
+                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6">
+                                <p className="text-4xl font-bold text-zinc-900">
+                                    ${product.price.toFixed(2)} <span className="text-base font-medium text-slate-500">{product.currency}</span>
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500">Pago único, acceso de por vida.</p>
+                                
+                                <BuyNowButton productId={product.id!} price={product.price} productName={product.title} productDescription={product.description || ''} currency={product.currency} />
+                                
+                                <div className="mt-6 space-y-3 border-t border-slate-200 pt-6 text-sm">
+                                    <h3 className="font-semibold text-zinc-900">¿Qué incluye tu compra?</h3>
+                                    <p className="flex items-center gap-2 text-slate-600"><CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" /> Acceso instantáneo a todos los archivos.</p>
+                                    <p className="flex items-center gap-2 text-slate-600"><CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" /> Licencia de uso comercial.</p>
+                                    <p className="flex items-center gap-2 text-slate-600"><CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" /> Actualizaciones futuras gratuitas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
+
+// Pequeño componente para no repetir el código de la info del vendedor
+const SellerInfo = ({ product, className }: { product: Product, className?: string }) => (
+    <div className={`flex items-center gap-4 ${className}`}>
+        <Link href={`/seller/${product.sellerUsername}`} className="flex items-center gap-3 group">
+            <div className="relative h-10 w-10 overflow-hidden rounded-full bg-slate-200">
+                <Image src={product.sellerAvatarUrl || '/images/default-avatar.png'} alt={`Avatar de ${product.sellerName}`} fill className="object-cover" />
+            </div>
+            <div>
+                <p className="text-sm font-semibold text-zinc-900 group-hover:text-orange-600">{product.sellerName}</p>
+                <p className="text-sm text-slate-500">Vendedor Verificado</p>
+            </div>
+        </Link>
+        <div className="flex items-center">
+            <RatingStars rating={product.averageRating || 0} />
+            <a href="#reviews-section" className="ml-2 text-sm text-slate-500 hover:text-orange-600">
+                ({product.reviewCount || 0})
+            </a>
+        </div>
+    </div>
+);
