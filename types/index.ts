@@ -1,5 +1,3 @@
-// --- ARCHIVO COMPLETO Y CORREGIDO: types/index.ts ---
-
 export type ProductFile = {
   name: string;
   url: string;
@@ -14,15 +12,15 @@ export type Product = {
   price: number;
   currency: string;
   category: string;
-  type: string;
-  industry: string;
+  // type: string; // <-- CAMPO OBSOLETO ELIMINADO
+  // industry: string; // <-- CAMPO OBSOLETO ELIMINADO
   language?: string | null;
   previewImageURL?: string | null;
   additionalFiles?: ProductFile[];
   sellerName?: string;
   sellerId?: string;
   sellerUsername?: string | null;
-  sellerAvatarUrl?: string | null; // <-- LÍNEA AÑADIDA
+  sellerAvatarUrl?: string | null;
   createdAt?: number | null;
   tags?: string[];
   isWishlisted?: boolean;
@@ -55,8 +53,8 @@ export type PurchasedProductEntry = {
 
 export interface FilterCriteria {
     category?: string;
-    industry?: string;
-    type?: string;
+    // industry?: string; // <-- CAMPO OBSOLETO ELIMINADO
+    // type?: string; // <-- CAMPO OBSOLETO ELIMINADO
     sortBy?: string;
     q?: string;
 }

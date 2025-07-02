@@ -10,12 +10,14 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
 
-    // --- PRUEBA FINAL: Se comenta el filtro 'approved' para aislar el problema ---
-    // query = query.where('approved', '==', true);
+    // CORRECCIÓN: Se reactiva el filtro de 'approved' para producción.
+    query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") {
       query = query.where('category', '==', criteria.category);
     }
+    
+    // CORRECCIÓN: Se eliminan los filtros obsoletos por 'industry' y 'type'.
     
     if (criteria.q) {
         const searchTerms = criteria.q.toLowerCase().split(' ').filter(term => term.length > 1);
