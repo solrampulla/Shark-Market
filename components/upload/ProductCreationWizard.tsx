@@ -6,17 +6,17 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
-// ---> CORRECCIÓN: La importación ahora apunta al nuevo archivo de acciones de producto.
 import { createAssistedProductAction } from '@/app/actions/product.actions'; 
 import Step1_BasicInfoForm from './wizard-steps/Step1_BasicInfoForm';
 import Step2_MarketAnalysisForm from './wizard-steps/Step2_MarketAnalysisForm';
 import Step3_MarketingForm from './wizard-steps/Step3_MarketingForm';
 import Step4_FinancialsForm from './wizard-steps/Step4_FinancialsForm';
 import Step5_FinalizeForm from './wizard-steps/Step5_FinalizeForm';
+import { SHARK_MARKET_CATEGORIES } from '@/lib/product-categories'; // <-- Se importa la nueva lista
 
-// Definición de la data del producto (estructura plana para el formulario)
+// Se simplifica la data del producto
 interface ProductFormData {
-  title: string; description: string; price: number | string; category: string; industry: string; type: string;
+  title: string; description: string; price: number | string; category: string;
   location_country: string; market_size: number | string; customer_profile_summary: string;
   strengths: string; weaknesses: string; opportunities: string; threats: string;
   marketing_channels: string[]; successful_strategy_description: string; sales_process: string; upsell_product_id: string;
@@ -30,9 +30,9 @@ export default function ProductCreationWizard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   
-  // ---> CORRECCIÓN: Estado inicial completo para evitar errores de tipo.
+  // Estado inicial simplificado
   const [productData, setProductData] = useState<ProductFormData>({
-    title: '', description: '', price: '', category: '', industry: '', type: '',
+    title: '', description: '', price: '', category: SHARK_MARKET_CATEGORIES[0].value, // <-- Usa el valor por defecto de la nueva lista
     location_country: '', market_size: '', customer_profile_summary: '',
     strengths: '', weaknesses: '', opportunities: '', threats: '',
     marketing_channels: [], successful_strategy_description: '', sales_process: '', upsell_product_id: '',
@@ -49,9 +49,11 @@ export default function ProductCreationWizard() {
     return () => unsubscribe();
   }, []);
 
+  // El useEffect que genera el resumen ahora es más simple
   useEffect(() => {
     if (currentStep === 5 && executiveSummary === '') {
-      const summary = `Este producto detalla un plan de negocio para un ${productData.type.toLowerCase()} en la industria de ${productData.industry}, localizado en ${productData.location_country}. El proyecto está dirigido a ${productData.customer_profile_summary.toLowerCase()}. La estrategia de marketing se centra en ${productData.marketing_channels.join(', ')}. Con una inversión inicial de ${productData.initial_investment}€ y unos ingresos mensuales estimados de ${productData.monthly_revenue}€, este plan ofrece una visión completa para alcanzar el éxito.`;
+      const selectedCategory = SHARK_MARKET_CATEGORIES.find(c => c.value === productData.category)?.label || 'negocio';
+      const summary = `Este producto detalla un plan de ${selectedCategory.toLowerCase()} en ${productData.location_country}. El proyecto está dirigido a ${productData.customer_profile_summary.toLowerCase()}. La estrategia de marketing se centra en ${productData.marketing_channels.join(', ')}. Con una inversión inicial de ${productData.initial_investment}€ y unos ingresos mensuales estimados de ${productData.monthly_revenue}€, este plan ofrece una visión completa.`;
       setExecutiveSummary(summary);
     }
   }, [currentStep, productData, executiveSummary]);
@@ -77,6 +79,7 @@ export default function ProductCreationWizard() {
   
   const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
   
+  // La validación de los pasos no cambia, ya que no dependía de 'type' o 'industry'
   const isStep1Complete = productData.title.trim() !== '' && Number(productData.price) > 0 && previewImageFile !== null;
   const isStep2Complete = productData.location_country.trim() !== '' && Number(productData.market_size) > 0;
   const isStep3Complete = productData.marketing_channels.length > 0;
@@ -94,7 +97,7 @@ export default function ProductCreationWizard() {
   }
   
   const handleFinalSubmit = async () => {
-      if (!user) { // ---> CORRECCIÓN: Verificación de 'user' antes de usar 'user.uid'
+      if (!user) {
           toast.error("Debes iniciar sesión para publicar un producto.");
           return;
       }
@@ -123,8 +126,9 @@ export default function ProductCreationWizard() {
         growth_rate: Number(productData.growth_rate),
       };
       formData.append('financials', JSON.stringify(financials));
-
-      const basicData = { title: productData.title, description: productData.description, price: productData.price, category: productData.category, industry: productData.industry, type: productData.type };
+      
+      // Se simplifican los datos básicos que se envían
+      const basicData = { title: productData.title, description: productData.description, price: productData.price, category: productData.category };
       Object.entries(basicData).forEach(([key, value]) => formData.append(key, String(value)));
 
       const result = await createAssistedProductAction(formData);

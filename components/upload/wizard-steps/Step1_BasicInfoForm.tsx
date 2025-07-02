@@ -1,20 +1,20 @@
-// --- ARCHIVO ACTUALIZADO: components/upload/wizard-steps/Step1_BasicInfoForm.tsx ---
-// CAMBIO: Se añade un campo para subir la imagen de portada.
 'use client';
 
 import React from 'react';
 import Image from 'next/image';
-import { CATEGORIES, INDUSTRIES, PRODUCT_TYPES } from '@/lib/constants';
+// --- INICIO DE LA CORRECCIÓN ---
+// Importamos la nueva lista de categorías y eliminamos las antiguas
+import { SHARK_MARKET_CATEGORIES } from '@/lib/product-categories';
 import { UploadCloud } from 'lucide-react';
 
+// Se simplifica la data que maneja este componente
 interface BasicInfoData {
   title: string;
   description: string;
   price: number | string;
   category: string;
-  industry: string;
-  type: string;
 }
+// --- FIN DE LA CORRECCIÓN ---
 
 interface Step1Props {
   data: BasicInfoData;
@@ -39,8 +39,7 @@ export default function Step1_BasicInfoForm({ data, onDataChange, previewImage, 
 
   return (
     <div className="space-y-6">
-      {/* ... (Los campos de Título y Descripción no cambian) ... */}
-       <div>
+      <div>
         <label htmlFor="title" className={labelStyle}>Título del Producto *</label>
         <input type="text" name="title" id="title" value={data.title} onChange={handleInputChange} className={inputStyle} placeholder="Ej: Plan de Negocio para Startup SaaS" required />
       </div>
@@ -49,7 +48,6 @@ export default function Step1_BasicInfoForm({ data, onDataChange, previewImage, 
         <textarea name="description" id="description" value={data.description} onChange={handleInputChange} rows={3} className={inputStyle} placeholder="Describe en pocas frases de qué trata tu producto y qué problema soluciona." required />
       </div>
 
-      {/* ---> NUEVO: Campo para la imagen de portada */}
       <div>
         <label htmlFor="previewImage" className={labelStyle}>Imagen de Portada *</label>
         <div className="mt-2 flex items-center gap-x-3">
@@ -65,32 +63,21 @@ export default function Step1_BasicInfoForm({ data, onDataChange, previewImage, 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t">
-        {/* ... (Los campos de Precio, Categoría, etc. no cambian) ... */}
-         <div>
+          <div>
             <label htmlFor="price" className={labelStyle}>Precio (USD) *</label>
             <input type="number" name="price" id="price" value={data.price} onChange={handleInputChange} className={inputStyle} placeholder="49.99" required min="0" step="0.01" />
-        </div>
-        <div>
+          </div>
+          {/* --- INICIO DE LA CORRECCIÓN --- */}
+          {/* Se actualiza el menú para usar la nueva lista de categorías */}
+          <div>
             <label htmlFor="category" className={labelStyle}>Categoría *</label>
             <select name="category" id="category" value={data.category} onChange={handleInputChange} className={inputStyle} required>
-                <option value="" disabled>Selecciona una categoría</option>
-                {CATEGORIES.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {/* Se eliminó la opción "disabled" para asegurar que siempre haya un valor válido */}
+              {SHARK_MARKET_CATEGORIES.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-        </div>
-        <div>
-            <label htmlFor="industry" className={labelStyle}>Industria *</label>
-            <select name="industry" id="industry" value={data.industry} onChange={handleInputChange} className={inputStyle} required>
-                <option value="" disabled>Selecciona una industria</option>
-                {INDUSTRIES.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-            </select>
-        </div>
-        <div>
-            <label htmlFor="type" className={labelStyle}>Tipo de Producto *</label>
-            <select name="type" id="type" value={data.type} onChange={handleInputChange} className={inputStyle} required>
-                <option value="" disabled>Selecciona un tipo</option>
-                {PRODUCT_TYPES.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-            </select>
-        </div>
+          </div>
+          {/* Los desplegables de 'Industry' y 'Type' se han eliminado */}
+          {/* --- FIN DE LA CORRECCIÓN --- */}
       </div>
     </div>
   );
