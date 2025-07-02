@@ -10,8 +10,8 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
 
-    // Mantenemos el filtro 'approved' ya que es esencial para los índices.
-    query = query.where('approved', '==', true);
+    // --- PRUEBA FINAL: Se comenta el filtro 'approved' para aislar el problema ---
+    // query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") {
       query = query.where('category', '==', criteria.category);
@@ -27,7 +27,6 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
     } else if (criteria.sortBy === 'price_desc') {
       query = query.orderBy('price', 'desc');
     } else {
-      // Mantenemos la ordenación por fecha, que funcionará con el índice re-creado.
       query = query.orderBy('createdAt', 'desc'); 
     }
     
@@ -48,7 +47,7 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
   } catch (error: any) {
     console.error('[Action] Error en getFilteredProductsAction:', error);
     if (error.code === 'failed-precondition') {
-        return { success: false, error: 'Error de BD: Un índice necesario para esta consulta no está listo. Por favor, inténtalo de nuevo en unos minutos.' };
+        return { success: false, error: 'Error de BD: Un índice necesario para esta consulta no está listo.' };
     }
     return { success: false, error: 'No se pudieron obtener los productos.' };
   }
