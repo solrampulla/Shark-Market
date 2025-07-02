@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { type User } from 'firebase/auth';
 import { type Product } from '@/types';
-
 import { SHARK_MARKET_CATEGORIES } from '@/lib/product-categories'; 
 import { updateProductAction } from '@/app/actions/product.actions';
 
@@ -17,38 +16,34 @@ interface EditProductFormProps {
 export default function EditProductForm({ currentUser, product }: EditProductFormProps) {
     const router = useRouter();
     
+    // El estado ahora solo contiene los campos que el formulario realmente edita
     const [formData, setFormData] = useState({
         title: product.title || '',
         description: product.description || '',
-        price: product.price || '',
-        category: product.category || SHARK_MARKET_CATEGORIES[0].value,
-        // Añadimos los campos obligatorios que faltaban para que el tipo coincida
-        currency: product.currency || 'USD',
-        language: product.language || 'Español',
+        price: product.price || 0,
+        category: product.category || '',
     });
     
     const [isLoading, setIsLoading] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
-        setFormData(prev => ({ ...prev, [name]: type === 'number' ? parseFloat(value) || '' : value }));
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
 
-        // --- CORRECCIÓN CLAVE ---
-        // Construimos el objeto de actualización asegurándonos de que el precio es un número
-        const updateData = {
-          ...formData,
-          price: Number(formData.price)
+        // Creamos el objeto de datos solo con lo que ha cambiado.
+        // Aseguramos que el precio sea un número.
+        const dataToUpdate = {
+            ...formData,
+            price: Number(formData.price),
         };
-        // --- FIN DE LA CORRECCIÓN ---
 
-        const promise = updateProductAction(currentUser.uid, product.id!, updateData).then(result => {
+        const promise = updateProductAction(currentUser.uid, product.id!, dataToUpdate).then(result => {
             if (!result.success) throw new Error(result.message || "Error desconocido");
-            toast.success("Producto actualizado con éxito.");
             router.push('/my-products');
             router.refresh();
             return result.message;
