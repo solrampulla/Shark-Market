@@ -9,7 +9,7 @@ const companies = [
   { name: 'Amazon', path: '/logos/amazon.png' },
   { name: 'McKinsey & Company', path: '/logos/mckinsey.png' },
   { name: 'Goldman Sachs', path: '/logos/goldman-sachs.png' },
-  { name: 'Meta', path: '/logos/Meta.png' },
+  { name: 'Meta', path: '/logos/meta.png' },
   { name: 'apple', path: '/logos/apple.svg' },
 ];
 
