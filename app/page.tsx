@@ -5,12 +5,10 @@ import type { Metadata } from 'next';
 import HeroSection from "@/components/HeroSection";
 import FeaturedSection from "@/components/FeaturedSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
-// --- LÍNEA ELIMINADA ---
-// import TestimonialsSection from "@/components/TestimonialsSection"; 
-import TrustedBySection from '@/components/TrustedBySection'; // <-- LÍNEA AÑADIDA
+import TrustedBySection from '@/components/TrustedBySection';
 import CtaSection from "@/components/CtaSection";
 
-// Conexión a la BD (se mantiene igual)
+// Lógica de datos directamente aquí para máxima estabilidad
 import { adminDb } from '@/lib/firebaseAdmin';
 import { type Product } from '@/types';
 import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
@@ -23,18 +21,24 @@ export const metadata: Metadata = {
 
 async function getHomepageProducts(): Promise<Product[]> {
   try {
+    // Consulta simple y directa para los productos de la página de inicio
     const query = adminDb.collection('products')
       .where('approved', '==', true)
       .orderBy('createdAt', 'desc')
       .limit(4);
+      
     const snapshot = await query.get();
+
     if (snapshot.empty) {
+      console.log("Consulta de Homepage no devolvió productos.");
       return [];
     }
+    
     const products = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
         const data = doc.data();
         return {
-            id: doc.id, ...data,
+            id: doc.id,
+            ...data,
             createdAt: (data.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
             updatedAt: (data.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
         } as Product;
@@ -54,14 +58,14 @@ export default async function HomePage() {
       <HeroSection />
       <section className="py-24 bg-slate-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <FeaturedSection products={featuredProducts} isLoading={false} />
+          <FeaturedSection
+            products={featuredProducts}
+            isLoading={false}
+          />
         </div>
       </section>
       <section className="py-24 bg-white"><HowItWorksSection /></section>
-      
-      {/* --- SECCIÓN REEMPLAZADA --- */}
-      <TrustedBySection /> 
-      
+      <TrustedBySection />
       <section className="py-24 bg-white"><CtaSection /></section>
     </>
   );

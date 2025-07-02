@@ -10,7 +10,7 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
   try {
     let query: admin.firestore.Query = adminDb.collection('products');
 
-    // Se mantiene el filtro 'approved' ya que es esencial para los índices.
+    // Mantenemos el filtro 'approved' ya que es esencial para los índices.
     query = query.where('approved', '==', true);
 
     if (criteria.category && criteria.category !== "all") {
@@ -27,11 +27,11 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
     } else if (criteria.sortBy === 'price_desc') {
       query = query.orderBy('price', 'desc');
     } else {
-      // Se mantiene la ordenación por fecha, que es la correcta.
+      // Mantenemos la ordenación por fecha, que funcionará con el índice re-creado.
       query = query.orderBy('createdAt', 'desc'); 
     }
     
-    const snapshot = await query.limit(12).get();
+    const snapshot = await query.limit(20).get();
     if (snapshot.empty) return { success: true, data: [], count: 0 };
     
     const products = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
@@ -47,7 +47,9 @@ export async function getFilteredProductsAction(criteria: FilterCriteria) {
     return { success: true, data: products, count: products.length };
   } catch (error: any) {
     console.error('[Action] Error en getFilteredProductsAction:', error);
-    if (error.code === 'failed-precondition') return { success: false, error: 'Error de BD: Falta un índice para esta consulta.' };
+    if (error.code === 'failed-precondition') {
+        return { success: false, error: 'Error de BD: Un índice necesario para esta consulta no está listo. Por favor, inténtalo de nuevo en unos minutos.' };
+    }
     return { success: false, error: 'No se pudieron obtener los productos.' };
   }
 }
