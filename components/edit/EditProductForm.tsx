@@ -7,6 +7,8 @@ import { type User } from 'firebase/auth';
 import { type Product } from '@/types';
 import { SHARK_MARKET_CATEGORIES } from '@/lib/product-categories'; 
 import { updateProductAction } from '@/app/actions/product.actions';
+import Image from 'next/image';
+import { UploadCloud } from 'lucide-react';
 
 interface EditProductFormProps {
   currentUser: User;
@@ -16,7 +18,6 @@ interface EditProductFormProps {
 export default function EditProductForm({ currentUser, product }: EditProductFormProps) {
     const router = useRouter();
     
-    // El estado ahora solo contiene los campos que el formulario realmente edita
     const [formData, setFormData] = useState({
         title: product.title || '',
         description: product.description || '',
@@ -24,6 +25,9 @@ export default function EditProductForm({ currentUser, product }: EditProductFor
         category: product.category || '',
     });
     
+    const [newPreviewImage, setNewPreviewImage] = useState<File | null>(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(product.previewImageURL || null);
+
     const [isLoading, setIsLoading] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -31,27 +35,50 @@ export default function EditProductForm({ currentUser, product }: EditProductFor
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error("La imagen debe ser menor a 2MB.");
+                return;
+            }
+            setNewPreviewImage(file);
+            setImagePreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
 
-        // Creamos el objeto de datos solo con lo que ha cambiado.
-        // Aseguramos que el precio sea un número.
-        const dataToUpdate = {
-            ...formData,
-            price: Number(formData.price),
-        };
+        const dataToSend = new FormData();
+        
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Añadimos los IDs al paquete de datos
+        dataToSend.append('userId', currentUser.uid);
+        dataToSend.append('productId', product.id!);
+        
+        // Añadimos el resto de los datos del formulario
+        Object.entries(formData).forEach(([key, value]) => {
+            dataToSend.append(key, String(value));
+        });
 
-        const promise = updateProductAction(currentUser.uid, product.id!, dataToUpdate).then(result => {
+        if (newPreviewImage) {
+            dataToSend.append('newPreviewImage', newPreviewImage);
+        }
+
+        // Llamamos a la acción con un solo argumento, como ahora espera
+        const promise = updateProductAction(dataToSend).then(result => {
+        // --- FIN DE LA CORRECCIÓN ---
             if (!result.success) throw new Error(result.message || "Error desconocido");
             router.push('/my-products');
             router.refresh();
-            return result.message;
+            return "Producto actualizado con éxito.";
         });
 
         toast.promise(promise, {
             loading: 'Actualizando tu producto...',
-            success: (message) => `Éxito: ${message}`,
+            success: (message) => `${message}`,
             error: (err) => `Error: ${err.message}`,
             finally: () => setIsLoading(false),
         });
@@ -83,6 +110,27 @@ export default function EditProductForm({ currentUser, product }: EditProductFor
                 <select name="category" id="category" value={formData.category} onChange={handleInputChange} className={inputStyle}>
                     {SHARK_MARKET_CATEGORIES.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
                 </select>
+            </div>
+        </div>
+
+        <div>
+            <label htmlFor="newPreviewImage" className={labelStyle}>Cambiar Imagen de Portada (Opcional)</label>
+            <div className="mt-2 flex items-center gap-x-4">
+                <div className="h-24 w-24 flex-shrink-0 bg-slate-100 rounded-md flex items-center justify-center border">
+                    {imagePreviewUrl ? (
+                        <Image src={imagePreviewUrl} alt="Vista previa" width={96} height={96} className="h-full w-full object-cover rounded-md" />
+                    ) : (
+                        <UploadCloud className="h-8 w-8 text-slate-400" />
+                    )}
+                </div>
+                <input 
+                    type="file" 
+                    id="newPreviewImage" 
+                    name="newPreviewImage" 
+                    accept="image/jpeg, image/png, image/webp" 
+                    onChange={handleImageChange} 
+                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500/10 file:text-orange-600 hover:file:bg-orange-500/20 cursor-pointer"
+                />
             </div>
         </div>
         

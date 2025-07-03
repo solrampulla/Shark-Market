@@ -153,31 +153,57 @@ export async function createAssistedProductAction(formData: FormData) {
     }
 }
 
-// --- FUNCIÓN CORREGIDA ---
 export async function updateProductAction(
-  userId: string,
-  productId: string,
-  productData: Partial<Product>
+  formData: FormData
 ): Promise<{ success: boolean; message: string; }> {
-  if (!userId || !productId) return { success: false, message: 'Faltan datos.' };
+  
+  const userId = formData.get('userId') as string;
+  const productId = formData.get('productId') as string;
+  const newPreviewImage = formData.get('newPreviewImage') as File | null;
+
+  if (!userId || !productId) return { success: false, message: 'Faltan datos de identificación.' };
+  
   try {
     const productRef = adminDb.collection('products').doc(productId);
     const doc = await productRef.get();
     if (!doc.exists) return { success: false, message: 'El producto no existe.' };
-    if (doc.data()?.sellerId !== userId) return { success: false, message: 'No tienes permiso.' };
-    
-    // Se construye el objeto de actualización de forma segura
-    const { updatedAt, ...restOfProductData } = productData;
-    const dataToUpdate = {
-        ...restOfProductData,
-        updatedAt: FieldValue.serverTimestamp(),
-    };
+    if (doc.data()?.sellerId !== userId) return { success: false, message: 'No tienes permiso para editar este producto.' };
 
-    if (productData.title) {
-        // Se castea a 'any' para añadir una propiedad que no está en el tipo original
-        (dataToUpdate as any).searchableKeywords = productData.title.toLowerCase().split(' ').filter(word => word.length > 1);
+    const bucket = adminStorage.bucket();
+    let newPreviewImageURL = doc.data()?.previewImageURL; 
+
+    if (newPreviewImage) {
+        const oldImageUrl = doc.data()?.previewImageURL;
+        if (oldImageUrl) {
+            try {
+                const oldImageFileName = oldImageUrl.split('/o/')[1].split('?')[0];
+                await bucket.file(decodeURIComponent(oldImageFileName)).delete();
+            } catch (imageError) {
+                console.error("No se pudo borrar la imagen antigua:", imageError);
+            }
+        }
+
+        const newImageFilePath = `product-previews/${userId}/${Date.now()}-${newPreviewImage.name}`;
+        const newImageFileRef = bucket.file(newImageFilePath);
+        const buffer = Buffer.from(await newPreviewImage.arrayBuffer());
+        await newImageFileRef.save(buffer, { metadata: { contentType: newPreviewImage.type } });
+        await newImageFileRef.makePublic();
+        newPreviewImageURL = newImageFileRef.publicUrl();
     }
 
+    const dataToUpdate: Partial<Product> = {
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      price: Number(formData.get('price')),
+      category: formData.get('category') as string,
+      previewImageURL: newPreviewImageURL,
+      updatedAt: FieldValue.serverTimestamp() as any,
+    };
+
+    if (dataToUpdate.title) {
+        dataToUpdate.searchableKeywords = dataToUpdate.title.toLowerCase().split(' ').filter(word => word.length > 1);
+    }
+    
     await productRef.update(dataToUpdate);
 
     revalidatePath(`/product/${productId}`);
@@ -187,7 +213,7 @@ export async function updateProductAction(
     return { success: true, message: 'Producto actualizado.' };
   } catch (error: any) {
     console.error('[Action] Error en updateProductAction:', error);
-    return { success: false, message: 'Error en el servidor.' };
+    return { success: false, message: 'Error en el servidor al actualizar.' };
   }
 }
 
