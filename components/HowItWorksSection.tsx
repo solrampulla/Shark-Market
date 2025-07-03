@@ -1,6 +1,3 @@
-// --- FILE: components/HowItWorksSection.tsx ---
-// COMPLETELY REFACTORED with Tabs
-
 'use client';
 
 import { useState } from 'react';
@@ -45,30 +42,23 @@ const sellerSteps = [
 
 
 const HowItWorksSection = () => {
-  // ---> NUEVO: Estado para controlar la pestaña activa. Por defecto, 'buyer'.
   const [activeTab, setActiveTab] = useState<'buyer' | 'seller'>('buyer');
-
-  // Determinamos qué contenido mostrar basado en la pestaña activa.
   const stepsToShow = activeTab === 'buyer' ? buyerSteps : sellerSteps;
-
-  // Estilos para las pestañas
-  const activeTabStyle = "bg-accent text-white";
+  const activeTabStyle = "bg-orange-500 text-white";
   const inactiveTabStyle = "bg-slate-200 text-slate-700 hover:bg-slate-300";
 
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
-          {/* ---> CAMBIO: Título actualizado con la nueva fuente y traducción. */}
-          <h2 className="font-serif text-4xl font-bold text-text-DEFAULT mb-4">
+          <h2 className="font-serif text-4xl font-bold text-zinc-900 mb-4">
             Cómo Funciona
           </h2>
-          <p className="text-lg text-text-light max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Una plataforma diseñada tanto para emprendedores que buscan herramientas como para expertos que desean monetizar su conocimiento.
           </p>
         </div>
         
-        {/* ---> NUEVO: Selector de pestañas */}
         <div className="flex justify-center gap-x-2 sm:gap-x-4 mb-10">
           <button
             onClick={() => setActiveTab('buyer')}
@@ -84,31 +74,31 @@ const HowItWorksSection = () => {
           </button>
         </div>
 
-        {/* ---> CAMBIO: La parrilla ahora es dinámica y renderiza el contenido del estado activo. */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           {stepsToShow.map((step, index) => (
             <div key={index}>
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
                 <i className={`${step.icon} text-4xl`}></i>
               </div>
-              <h3 className="text-xl font-semibold text-text-DEFAULT mb-2">{step.title}</h3>
-              <p className="text-text-light">{step.description}</p>
+              <h3 className="text-xl font-semibold text-zinc-900 mb-2">{step.title}</h3>
+              <p className="text-slate-600">{step.description}</p>
             </div>
           ))}
         </div>
 
-        {/* ---> NUEVO: Botón de Llamada a la Acción Condicional */}
         <div className="mt-12 text-center">
           {activeTab === 'buyer' && (
-            <Link href="/search" className="px-8 py-3 bg-accent text-white font-bold rounded-md hover:bg-accent-hover transition-colors duration-300">
-              Explorar Plantillas
+            <Link href="/search" className="px-8 py-3 bg-orange-500 text-white font-bold rounded-md hover:bg-orange-600 transition-colors duration-300">
+              Explorar Herramientas
             </Link>
           )}
+          {/* --- INICIO DE LA CORRECCIÓN --- */}
           {activeTab === 'seller' && (
-            <Link href="/register" className="px-8 py-3 bg-accent text-white font-bold rounded-md hover:bg-accent-hover transition-colors duration-300">
+            <Link href="/upload" className="px-8 py-3 bg-orange-500 text-white font-bold rounded-md hover:bg-orange-600 transition-colors duration-300">
               Empezar a Vender
             </Link>
           )}
+          {/* --- FIN DE LA CORRECCIÓN --- */}
         </div>
       </div>
     </section>
