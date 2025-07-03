@@ -35,7 +35,7 @@ const HeroSection = () => {
           </div>
           <div className="aspect-[3/2] w-full overflow-hidden rounded-xl">
             <Image
-              src="/images/opcion-6.jpg"
+              src="/images/opcion-8.png"
               alt="Estrategias y planes de negocio en Shark Market"
               width={1200}
               height={800}
