@@ -160,6 +160,7 @@ export async function updateProductAction(
   const userId = formData.get('userId') as string;
   const productId = formData.get('productId') as string;
   const newPreviewImage = formData.get('newPreviewImage') as File | null;
+  const newProductFiles = formData.getAll('newProductFiles') as File[];
 
   if (!userId || !productId) return { success: false, message: 'Faltan datos de identificación.' };
   
@@ -167,36 +168,60 @@ export async function updateProductAction(
     const productRef = adminDb.collection('products').doc(productId);
     const doc = await productRef.get();
     if (!doc.exists) return { success: false, message: 'El producto no existe.' };
-    if (doc.data()?.sellerId !== userId) return { success: false, message: 'No tienes permiso para editar este producto.' };
+    const productData = doc.data();
+    if (productData?.sellerId !== userId) return { success: false, message: 'No tienes permiso para editar este producto.' };
 
     const bucket = adminStorage.bucket();
-    let newPreviewImageURL = doc.data()?.previewImageURL; 
+    const uploadAndGetPublicUrl = async (file: File, folder: string): Promise<string> => {
+        const filePath = `${folder}/${userId}/${Date.now()}-${file.name}`;
+        const fileRef = bucket.file(filePath);
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await fileRef.save(buffer, { metadata: { contentType: file.type } });
+        await fileRef.makePublic();
+        return fileRef.publicUrl();
+    };
+
+    let newPreviewImageURL = productData?.previewImageURL;
+    let processedNewFiles = productData?.additionalFiles;
 
     if (newPreviewImage) {
-        const oldImageUrl = doc.data()?.previewImageURL;
-        if (oldImageUrl) {
+        if (productData?.previewImageURL) {
             try {
-                const oldImageFileName = oldImageUrl.split('/o/')[1].split('?')[0];
+                const oldImageFileName = productData.previewImageURL.split('/o/')[1].split('?')[0];
                 await bucket.file(decodeURIComponent(oldImageFileName)).delete();
             } catch (imageError) {
                 console.error("No se pudo borrar la imagen antigua:", imageError);
             }
         }
-
-        const newImageFilePath = `product-previews/${userId}/${Date.now()}-${newPreviewImage.name}`;
-        const newImageFileRef = bucket.file(newImageFilePath);
-        const buffer = Buffer.from(await newPreviewImage.arrayBuffer());
-        await newImageFileRef.save(buffer, { metadata: { contentType: newPreviewImage.type } });
-        await newImageFileRef.makePublic();
-        newPreviewImageURL = newImageFileRef.publicUrl();
+        newPreviewImageURL = await uploadAndGetPublicUrl(newPreviewImage, 'product-previews');
     }
 
+    if (newProductFiles && newProductFiles.length > 0) {
+        if (productData?.additionalFiles && productData.additionalFiles.length > 0) {
+            for (const oldFile of productData.additionalFiles) {
+                try {
+                    const oldFileName = oldFile.url.split('/o/')[1].split('?')[0];
+                    await bucket.file(decodeURIComponent(oldFileName)).delete();
+                } catch (fileError) {
+                    console.error(`No se pudo borrar el archivo antiguo ${oldFile.name}:`, fileError);
+                }
+            }
+        }
+        processedNewFiles = await Promise.all(
+          newProductFiles.map(async (file) => {
+            const url = await uploadAndGetPublicUrl(file, 'product-files');
+            return { name: file.name, url: url, size: file.size, type: file.type };
+          })
+        );
+    }
+    
     const dataToUpdate: Partial<Product> = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       price: Number(formData.get('price')),
       category: formData.get('category') as string,
       previewImageURL: newPreviewImageURL,
+      additionalFiles: processedNewFiles,
       updatedAt: FieldValue.serverTimestamp() as any,
     };
 
@@ -239,7 +264,7 @@ export async function getProductDetailsForDisplayAction(productId: string): Prom
         } as Product;
         return { success: true, product: plainProduct };
     } catch (error: any) {
-        console.error(`[ACCIÓN - ERROR CRÍTICO] Excepción capturada en getProductDetailsForDisplayAction para ID ${productId}:`, error);
+        console.error(`[ACCIÓN - ERROR CRÍTICO] Excepción capturada para ID ${productId}:`, error);
         return { success: false, error: 'Error crítico del servidor.' };
     }
 }
@@ -253,8 +278,7 @@ export async function fetchSellerProductsAction(userId: string) {
         const products = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
             const data = doc.data();
             return { 
-                id: doc.id, 
-                ...data,
+                id: doc.id, ...data,
                 createdAt: (data.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
                 updatedAt: (data.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
             } as Product;
@@ -272,6 +296,26 @@ export async function deleteProductAction(userId: string, productId: string) {
         const doc = await productRef.get();
         if (!doc.exists) return { success: false, message: "El producto no existe." };
         if (doc.data()?.sellerId !== userId) return { success: false, message: "No tienes permiso."};
+        
+        // Antes de borrar el documento, borramos los archivos asociados en Storage
+        const productData = doc.data();
+        const bucket = adminStorage.bucket();
+
+        if (productData?.previewImageURL) {
+            try {
+                const fileName = productData.previewImageURL.split('/o/')[1].split('?')[0];
+                await bucket.file(decodeURIComponent(fileName)).delete();
+            } catch (e) { console.error("Error borrando imagen de portada:", e); }
+        }
+
+        if (productData?.additionalFiles && productData.additionalFiles.length > 0) {
+            for (const file of productData.additionalFiles) {
+                try {
+                    const fileName = file.url.split('/o/')[1].split('?')[0];
+                    await bucket.file(decodeURIComponent(fileName)).delete();
+                } catch (e) { console.error(`Error borrando archivo ${file.name}:`, e); }
+            }
+        }
         
         await productRef.delete();
         

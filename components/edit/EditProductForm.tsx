@@ -4,11 +4,14 @@ import React, { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { type User } from 'firebase/auth';
-import { type Product } from '@/types';
+import { type Product, type ProductFile } from '@/types'; // Se añade ProductFile
 import { SHARK_MARKET_CATEGORIES } from '@/lib/product-categories'; 
 import { updateProductAction } from '@/app/actions/product.actions';
 import Image from 'next/image';
 import { UploadCloud } from 'lucide-react';
+// Importamos los componentes de subida de archivos que ya usamos en el otro formulario
+import FileUploadZone from '../upload/FileUploadZone';
+import FilePreview from '../upload/FilePreview';
 
 interface EditProductFormProps {
   currentUser: User;
@@ -27,6 +30,11 @@ export default function EditProductForm({ currentUser, product }: EditProductFor
     
     const [newPreviewImage, setNewPreviewImage] = useState<File | null>(null);
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(product.previewImageURL || null);
+
+    // --- INICIO DE LA CORRECCIÓN ---
+    // Nuevo estado para manejar los archivos de producto a reemplazar
+    const [newProductFiles, setNewProductFiles] = useState<File[]>([]);
+    // --- FIN DE LA CORRECCIÓN ---
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -47,18 +55,29 @@ export default function EditProductForm({ currentUser, product }: EditProductFor
         }
     };
 
+    // --- INICIO DE LA CORRECCIÓN ---
+    // Nuevas funciones para manejar los archivos de producto
+    const handleProductFilesChange = (acceptedFiles: File[]) => {
+        const currentFiles = [...acceptedFiles];
+        setNewProductFiles(currentFiles); // Reemplazamos los archivos anteriores por los nuevos
+        if (currentFiles.length > 0) {
+          toast.info(`${currentFiles.length} archivo(s) nuevo(s) seleccionado(s). Se reemplazarán los anteriores al guardar.`);
+        }
+    };
+
+    const removeNewProductFile = (fileToRemove: File) => {
+        setNewProductFiles(prevFiles => prevFiles.filter(file => file !== fileToRemove));
+    };
+    // --- FIN DE LA CORRECCIÓN ---
+
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
 
         const dataToSend = new FormData();
-        
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Añadimos los IDs al paquete de datos
         dataToSend.append('userId', currentUser.uid);
         dataToSend.append('productId', product.id!);
         
-        // Añadimos el resto de los datos del formulario
         Object.entries(formData).forEach(([key, value]) => {
             dataToSend.append(key, String(value));
         });
@@ -67,9 +86,16 @@ export default function EditProductForm({ currentUser, product }: EditProductFor
             dataToSend.append('newPreviewImage', newPreviewImage);
         }
 
-        // Llamamos a la acción con un solo argumento, como ahora espera
-        const promise = updateProductAction(dataToSend).then(result => {
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Añadimos los nuevos archivos de producto al formulario
+        if (newProductFiles.length > 0) {
+            newProductFiles.forEach(file => {
+                dataToSend.append('newProductFiles', file);
+            });
+        }
         // --- FIN DE LA CORRECCIÓN ---
+
+        const promise = updateProductAction(dataToSend).then(result => {
             if (!result.success) throw new Error(result.message || "Error desconocido");
             router.push('/my-products');
             router.refresh();
@@ -90,16 +116,15 @@ export default function EditProductForm({ currentUser, product }: EditProductFor
 
     return (
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* ... (campos de título, descripción, precio, categoría) ... */}
         <div>
           <label htmlFor="title" className={labelStyle}>Título del Producto</label>
           <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} required className={inputStyle} />
         </div>
-
         <div>
           <label htmlFor="description" className={labelStyle}>Descripción</label>
           <textarea name="description" id="description" value={formData.description || ''} onChange={handleInputChange} required rows={4} className={inputStyle}></textarea>
         </div>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label htmlFor="price" className={labelStyle}>Precio (USD)</label>
@@ -112,27 +137,37 @@ export default function EditProductForm({ currentUser, product }: EditProductFor
                 </select>
             </div>
         </div>
-
+        
+        {/* Campo para editar imagen de portada */}
         <div>
-            <label htmlFor="newPreviewImage" className={labelStyle}>Cambiar Imagen de Portada (Opcional)</label>
+            <label className={labelStyle}>Cambiar Imagen de Portada (Opcional)</label>
             <div className="mt-2 flex items-center gap-x-4">
                 <div className="h-24 w-24 flex-shrink-0 bg-slate-100 rounded-md flex items-center justify-center border">
                     {imagePreviewUrl ? (
                         <Image src={imagePreviewUrl} alt="Vista previa" width={96} height={96} className="h-full w-full object-cover rounded-md" />
-                    ) : (
-                        <UploadCloud className="h-8 w-8 text-slate-400" />
-                    )}
+                    ) : ( <UploadCloud className="h-8 w-8 text-slate-400" /> )}
                 </div>
-                <input 
-                    type="file" 
-                    id="newPreviewImage" 
-                    name="newPreviewImage" 
-                    accept="image/jpeg, image/png, image/webp" 
-                    onChange={handleImageChange} 
-                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500/10 file:text-orange-600 hover:file:bg-orange-500/20 cursor-pointer"
-                />
+                <input type="file" onChange={handleImageChange} accept="image/jpeg, image/png, image/webp" className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-500/10 file:text-orange-600 hover:file:bg-orange-500/20 cursor-pointer"/>
             </div>
         </div>
+
+        {/* --- INICIO DE LA CORRECCIÓN --- */}
+        {/* Nueva sección para reemplazar los archivos del producto */}
+        <div className="border-t pt-8">
+            <label className={labelStyle}>Reemplazar Archivos del Producto (Opcional)</label>
+            <p className="text-xs text-slate-500 mb-2">Si subes nuevos archivos aquí, los archivos anteriores se borrarán y reemplazarán por completo.</p>
+            <FileUploadZone onFileChange={handleProductFilesChange} />
+            <div className="mt-4 space-y-2">
+                {newProductFiles.length > 0 ? (
+                    newProductFiles.map((file, index) => (
+                        <FilePreview key={index} file={file} onRemove={() => removeNewProductFile(file)} />
+                    ))
+                ) : (
+                    <div className="text-sm text-slate-500">Actualmente se conservarán los archivos originales.</div>
+                )}
+            </div>
+        </div>
+        {/* --- FIN DE LA CORRECCIÓN --- */}
         
         <div className="pt-5 border-t border-slate-200">
             <button type="submit" disabled={isLoading} className={buttonStyle}>
