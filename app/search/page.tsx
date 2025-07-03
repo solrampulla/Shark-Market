@@ -1,3 +1,4 @@
+// app/search/page.tsx - VERSIÓN FINAL A PRUEBA DE BALAS
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import SearchPageClient from './SearchPageClient';
@@ -42,20 +43,35 @@ async function getProductsForSearch(searchParams: { [key: string]: string | stri
     const snapshot = await query.get();
     if (snapshot.empty) return [];
     
+    // --- INICIO DE LA SOLUCIÓN DEFINITIVA ---
     const products = snapshot.docs.map((doc: QueryDocumentSnapshot) => {
         const data = doc.data();
+        
+        // Lógica a prueba de balas para manejar fechas inconsistentes
+        const parseTimestamp = (timestamp: any): number | null => {
+            if (!timestamp) return null;
+            // Si es un objeto Timestamp de Firestore, usa toMillis()
+            if (typeof timestamp.toMillis === 'function') {
+                return timestamp.toMillis();
+            }
+            // Si ya es un número, úsalo directamente
+            if (typeof timestamp === 'number') {
+                return timestamp;
+            }
+            return null;
+        };
+
         return {
             id: doc.id, ...data,
-            createdAt: (data.createdAt as admin.firestore.Timestamp)?.toMillis() || null,
-            updatedAt: (data.updatedAt as admin.firestore.Timestamp)?.toMillis() || null,
+            createdAt: parseTimestamp(data.createdAt),
+            updatedAt: parseTimestamp(data.updatedAt),
         } as Product;
     });
+    // --- FIN DE LA SOLUCIÓN DEFINITIVA ---
     return products;
+
   } catch (error) {
-    // --- INICIO DE LA CORRECCIÓN ---
-    // Este log nos mostrará el error real en la consola de Vercel
-    console.error("ERROR DEFINITIVO EN LA CONSULTA DE BÚSQUEDA:", error);
-    // --- FIN DE LA CORRECCIÓN ---
+    console.error("Error definitivo en la consulta de búsqueda:", error);
     return []; 
   }
 }
@@ -65,10 +81,6 @@ export default async function SearchPage({ searchParams }: { searchParams: { [ke
   
   return (
     <div className="bg-slate-50 min-h-screen">
-        {/* Mantenemos el título rojo para saber que estamos en la versión correcta */}
-        <h1 className="text-center text-4xl font-bold text-red-500 p-10">
-            ESTA ES LA VERSIÓN NUEVA DEL CÓDIGO
-        </h1>
       <Suspense fallback={<div className="text-center p-10">Cargando...</div>}>
         <SearchPageClient 
           initialProducts={initialProducts} 
