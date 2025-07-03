@@ -1,3 +1,5 @@
+// --- VERSIÓN FINAL CON CATEGORÍAS CORREGIDAS ---
+
 'use client';
 
 import Image from 'next/image';
@@ -6,10 +8,14 @@ import React from 'react';
 import { WishlistButton } from './products/WishlistButton';
 import { type Product } from '@/types';
 import RatingStars from './RatingStars';
+// --- INICIO DE LA CORRECCIÓN ---
+// Importamos nuestra lista central de categorías
+import { SHARK_MARKET_CATEGORIES } from '@/lib/product-categories';
+// --- FIN DE LA CORRECCIÓN ---
 
 interface ProductCardProps {
   product: Product;
-  index: number; // <-- NUEVA PROPIEDAD para el retraso de la animación
+  index: number; 
   editUrl?: string;
   onDelete?: (productId: string, title: string) => void;
 }
@@ -18,8 +24,15 @@ export default function ProductCard({ product, index, editUrl, onDelete }: Produ
   
   const displayPrice = typeof product.price === 'number' ? product.price.toFixed(2) : '0.00';
   const displayTitle = product.title || "Activo sin título";
-  const displayCategory = product.category || "General";
   const detailUrl = `/product/${product.id}`;
+
+  // --- INICIO DE LA CORRECCIÓN ---
+  // Buscamos la etiqueta correspondiente al ID de la categoría
+  const displayCategory = SHARK_MARKET_CATEGORIES.find(cat => cat.value === product.category)?.label || product.category || "General";
+  // --- FIN DE LA CORRECCIÓN ---
+  
+  const sellerName = product.sellerName || 'Anónimo';
+  const sellerAvatarUrl = product.sellerAvatarUrl || '/images/default-avatar.png';
 
   const handleDelete = () => {
     if (onDelete && product.id) {
@@ -74,13 +87,13 @@ export default function ProductCard({ product, index, editUrl, onDelete }: Produ
         <div className="mt-auto flex items-center justify-between border-t border-zinc-100 pt-3">
           <div className="flex items-center gap-2">
             <Image
-              src={product.sellerAvatarUrl || '/images/default-avatar.png'}
-              alt={`Avatar de ${product.sellerName || 'Vendedor'}`}
+              src={sellerAvatarUrl}
+              alt={`Avatar de ${sellerName}`}
               width={24}
               height={24}
               className="rounded-full bg-slate-200 object-cover"
             />
-            <span className="text-xs font-medium text-zinc-600">{product.sellerName || 'Anónimo'}</span>
+            <span className="text-xs font-medium text-zinc-600">{sellerName}</span>
           </div>
           <p className="text-xl font-bold text-zinc-900">
             ${displayPrice}
